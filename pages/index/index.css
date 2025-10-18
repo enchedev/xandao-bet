@@ -1,5 +1,6 @@
 body {
     margin:0;
+    width: 100vw;
     overflow-wrap:break-word;
     text-overflow: ellipsis;
     background-color: rgb(85, 82, 82);
@@ -12,6 +13,7 @@ header {
     align-items: center;
     background-color: black;
     padding: 2em;
+    width: 100%;
     gap: 20em;
 
     & h1 {
@@ -85,9 +87,15 @@ header {
 main {
     display: flex;
     justify-content: center;
+    width: 100%;
+    
     & .content{
         background-color: black;
         height: 1000em;
+        margin-left: 5%;
+        margin-right: 5%;
+        max-width: 90%;
+
 
         & .banner-xandao{
             display:flex;
@@ -95,11 +103,15 @@ main {
             align-items: flex-end;
             padding-right: 5em;
             padding-left: 5em;
-            width:80em;
             height: 30em;
+            max-width: 100%;
+
+            & img{
+                width: 40em;
+            }
 
             & .text{
-                font-size: 500%;
+                font-size: 3em;
                 text-align: right;
                 width: 100%;
                 display: flex;
