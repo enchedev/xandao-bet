@@ -1,0 +1,121 @@
+body {
+    margin:0;
+    overflow-wrap:break-word;
+    text-overflow: ellipsis;
+    background-color: rgb(85, 82, 82);
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+}
+
+header {
+    display:flex;
+    align-items: center;
+    background-color: black;
+    padding: 2em;
+    gap: 20em;
+
+    & h1 {
+        margin: 0;
+
+        & span{
+            color: rgb(13, 160, 13);
+        }
+    }
+
+    & .nav{
+        display: flex;
+        flex:1;
+        justify-content: center;
+
+        & .myList{
+            padding: 0;
+            margin: 0;
+            justify-content: space-around;
+            gap: 10em;
+            list-style-type: none;
+            display: flex;
+    
+            & .listItem{
+
+                & a{
+                    text-decoration: none;
+                    color: white;
+                    font-size: 1.4em;
+                }
+            }
+        }
+
+        & .dropdown {
+            position: relative;
+            font-size: 1rem;
+            display: block;
+        
+            & .dropbtn {
+                width: fit-content;
+                font-size: 1.4em;
+                background-color: black;
+                color: white;
+                font-family: 'Courier New', Courier, monospace;
+                padding: 0;
+                cursor: pointer;
+                border: none;
+            }
+    
+            & .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: rgb(85, 82, 82);
+                width: 20em;
+                padding: 1em;
+                text-align: center;
+        
+                & a {
+                    font-size: 1.4em;
+                    padding-top: 0.5em;
+                    text-decoration: none;
+                    display: block;
+                }
+            }
+    
+            & .dropdown-content.show {display:block;}
+        }
+    }
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    & .content{
+        background-color: black;
+        height: 1000em;
+
+        & .banner-xandao{
+            display:flex;
+            flex-direction: row;
+            align-items: flex-end;
+            padding-right: 5em;
+            padding-left: 5em;
+            width:80em;
+            height: 30em;
+
+            & .text{
+                font-size: 500%;
+                text-align: right;
+                width: 100%;
+                display: flex;
+                align-items: flex-end;
+                justify-content:right;
+
+                & p{
+                    margin: 0;
+
+                    & span{
+                        font-weight: bold;
+                        font-style: italic;
+                        color: rgb(13, 160, 13);
+                    }
+                }
+            }
+        }
+    }
+}
