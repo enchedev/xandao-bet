@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../../images/icons/icon.ico">
+    <title>Neutralize a Petralha</title>
+    <script src="../dropdown.js"></script>
+    <style>
+        body {
+            height: 100%;
+            margin: 0;
+        }
+        #spawning-area {
+            background-image: url("https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/12/45/6f/fachada-com-jardim.jpg?w=1200&h=-1&s=1");
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 80vh;
+            margin: 1%;
+        }
+        #lula {
+            height: clamp(70px, 12%, 150px);
+            width: clamp(70px, 12%, 150px);
+            position: absolute;
+            cursor: pointer;
+
+            & img {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+        }
+    </style>
+    <script src="script.js"></script>
+</head>
+<body>
+    <header>Neutralize a Petralha</header>
+    <h1>Neutralize os Lulas antes que sumam!</h1>
+    <p id="xandcoins"></p>
+    <div id="spawning-area"></div>
+</body>
+</html>

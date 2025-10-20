@@ -1,13 +1,3 @@
-body, main {
-    margin: 0;
-    width: 100%;
-    overflow-wrap: break-word;
-    text-overflow: ellipsis;
-    background-color: rgb(85, 82, 82);
-    font-family: 'Courier New', Courier, monospace;
-    color: white;
-}
-
 header {
     display: flex;
     align-items: center;
@@ -47,7 +37,7 @@ header {
                     font-size: 1.4em;
 
                     &:hover {
-                        background-color: rgb(77, 77, 77);
+                        background-color: grey;
                     }
                 }
             }
@@ -86,53 +76,6 @@ header {
             }
     
             & .dropdown-content.show {display:block;}
-        }
-    }
-}
-
-main {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    
-    & .content{
-        background-color: rgb(22, 22, 22);
-        margin-left: 5%;
-        margin-right: 5%;
-        max-width: 90%;
-
-
-        & .banner-xandao{
-            display:flex;
-            flex-direction: row;
-            align-items: flex-end;
-            padding-right: 5em;
-            padding-left: 5em;
-            height: 30em;
-            max-width: 100%;
-
-            & img{
-                width: 40em;
-            }
-
-            & .text{
-                font-size: 3em;
-                text-align: right;
-                width: 100%;
-                display: flex;
-                align-items: flex-end;
-                justify-content:right;
-
-                & p{
-                    margin: 0;
-
-                    & span{
-                        font-weight: bold;
-                        font-style: italic;
-                        color: rgb(13, 160, 13);
-                    }
-                }
-            }
         }
     }
 }
