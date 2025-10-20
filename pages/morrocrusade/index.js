@@ -75,7 +75,7 @@ function draw() {
     if(x) return;
     document.documentElement.style.setProperty('--tcolor', 'lightblue');
     over = true;
-    document.querySelector('.title').textContent = "Empate."
+    document.querySelector('.title').textContent = "Endless war ending."
     document.querySelector('.subtitle').textContent = "Você e Stalin, agora travados numa guerra sem fim, perpétuamente aterrorizam o morro, transformando-o num campo de guerra de proporções genocidas. Lutam até as favelas desmoronarem sob o peso de seus soldados, por uma terra onde ninguém mais vive."
     document.querySelector('.try-again').style.display = 'block';
 }
@@ -131,7 +131,7 @@ function addImage(where, row, col) {
 }
 
 function updateXands() {
-    document.querySelector('.xandcoins').textContent = xands;
+    document.querySelector('.xandcoins p').textContent = xands;
 }
 
 function activate(col, row) {
@@ -180,12 +180,9 @@ function checkWin() {
     ) {
         over = true;
         document.documentElement.style.setProperty('--tcolor', 'lightgreen');
-        document.querySelector('.title').textContent = "Você ganhou!"
+        document.querySelector('.title').textContent = "Great Ending!"
         document.querySelector('.subtitle').textContent = "O morro, agora sereno, canta louvores ao seu nome. Quinze novas vielas são nomeadas em sua honra, seu rosto agora parte da cultura da favela."
 
-        // for(row of cellMap) 
-        //     for(cell of row)
-        //         if(cell == 1) xands += 100;
         setCookie("xandcoins", xands, 10000);
         document.querySelector('.try-again').style.display = 'block';
         return true;
@@ -204,7 +201,7 @@ function checkWin() {
     ){
         document.documentElement.style.setProperty('--tcolor', 'crimson');
         over = true;
-        document.querySelector('.title').textContent = "Você Perdeu..."
+        document.querySelector('.title').textContent = "Bad Ending..."
         document.querySelector('.subtitle').textContent = "A favela se torna um dos eixos econômicos brasileiro, seu maior bem de exporte: Cocaína e jogadores de futebol. O estado cai aos joelhos ao ritmo que a quebrada se transforma numa utopia, o resto do país em inacabável taxa."
 
         for(row of cellMap) 

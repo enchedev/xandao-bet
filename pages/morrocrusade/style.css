@@ -11,6 +11,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    overflow: hidden;
 }
 
 header {
@@ -20,7 +21,7 @@ header {
     width: 100%;
     max-width: 100%;
     gap: 20em;
-    padding: 2em 0;
+    padding: 1%;
     font-family: 'Courier New', Courier, monospace;
     color: white;
 
@@ -136,7 +137,8 @@ header {
 .warning {
     color: #ff8888;
     font-family: 'Courier New', Courier, monospace;
-    margin-bottom: 10%;
+    margin-bottom: 3%;
+    max-height: 5%;
 }
 
 .title {
@@ -185,12 +187,24 @@ header {
     top: 10%;
     right: 1%;
     margin: 0px;
-    color: greenyellow;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 2rem;
+    display: flex;
+    flex-direction: row;
+
+    & p {
+        color: greenyellow;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 2rem;  
+        margin: 0px; 
+    } 
+
+    & img {
+        height: 2rem;
+        margin-left: 2%;
+    }
 }
+
 .try-again {
-    height: 5%;
+    height: 10%;
     width: 40%;
     margin: auto;
     color: blanchedalmond;

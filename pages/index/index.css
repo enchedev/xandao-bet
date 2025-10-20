@@ -1,4 +1,6 @@
 body, main {
+    height: 100vh;
+    margin: 0px;
     margin: 0;
     width: 100%;
     overflow-wrap: break-word;
@@ -6,6 +8,7 @@ body, main {
     background-color: rgb(85, 82, 82);
     font-family: 'Courier New', Courier, monospace;
     color: white;
+    overflow-x: hidden;
 }
 
 header {
@@ -15,7 +18,7 @@ header {
     width: 100%;
     max-width: 100%;
     gap: 20em;
-    padding: 2em 0;
+    padding: 1%;
 
     & h1 {
         margin: 0;
