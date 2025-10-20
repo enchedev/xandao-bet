@@ -63,17 +63,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 // console.log(`cellMap[${index}][${j - 1}] = true;`)
                 cellMap[index][j] = 0;
             }
-        })
+        });
 
     xands = +getCookie("xandcoins");
-    updateXands()
+    updateXands();
 });
 
 function draw() {
+    var x = checkWin();
+    console.log(x);
+    if(x) return;
     document.documentElement.style.setProperty('--tcolor', 'lightblue');
     over = true;
     document.querySelector('.title').textContent = "Empate."
     document.querySelector('.subtitle').textContent = "Você e Stalin, agora travados numa guerra sem fim, perpétuamente aterrorizam o morro, transformando-o num campo de guerra de proporções genocidas. Lutam até as favelas desmoronarem sob o peso de seus soldados, por uma terra onde ninguém mais vive."
+    document.querySelector('.try-again').style.display = 'block';
 }
 
 function botGuess() {
@@ -184,6 +188,7 @@ function checkWin() {
         //         if(cell == 1) xands += 100;
         setCookie("xandcoins", xands, 10000);
         document.querySelector('.try-again').style.display = 'block';
+        return true;
     }
     else if (
         (cellMap[0][0] == 2 && cellMap[0][1] == 2 && cellMap[0][2] == 2) ||
@@ -207,6 +212,7 @@ function checkWin() {
                 if(cell == 2) xands -= 100;
         setCookie("xandcoins", xands, 10000);
         document.querySelector('.try-again').style.display = 'block';
+        return true;
     }
-
+    return false;
 }
