@@ -1,40 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XandNíquel</title>
     <link rel="icon" type="image/x-icon" href="../../images/icons/icon.ico">
     <link href="style.css" rel="stylesheet" type="text/css">
-    <title>Neutralize a Petralha</title>
+    <script src="script.js"></script>
     <script src="../dropdown.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <style>
-        #spawning-area {
-            background-image: url("https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/12/45/6f/fachada-com-jardim.jpg?w=1200&h=-1&s=1");
-            background-repeat: no-repeat;
-            background-size: cover;
-            height: 80vh;
-            margin: 1%;
-        }
-        #lula {
-            height: clamp(70px, 12%, 150px);
-            width: clamp(70px, 12%, 150px);
-            position: absolute;
-            cursor: pointer;
-
-            & img {
-                height: 100%;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-        }
-
-        h1 {
-            margin: 1em;
-        }
-    </style>
-    <script src="script.js"></script>
 </head>
 <body>
     <header>
@@ -49,8 +23,8 @@
                         <button class="dropbtn" onclick="dropdown()">Minigames</button>
                         <div id="myDropdown" class="dropdown-content">
                             <a href="../neutralize/index.html">Neutralize a petralha!</a>
-                            <a href="../morrocrusade/index.html">Morro Crusade</a>
-                            <a href="../xandniquel/index.html">Xandníquel</a>
+                            <a href="">Morro Crusade</a>
+                            <a href="../xandniquel/xandniquel.html">Xandníquel</a>
                         </div>
                     </div>
                 </li>
@@ -58,8 +32,15 @@
         </nav>
     </header>
 
-    <h1>Neutralize os Lulas antes que sumam!</h1>
-    <p id="xandcoins"></p>
-    <div id="spawning-area"></div>
+    <div class="slot-machine">
+        <div class="reels">
+            <img class="reel" id="reel-1"></img>
+            <img class="reel" id="reel-2"></img>
+            <img class="reel" id="reel-3"></img>
+        </div>
+        <button id="btn" onclick="spin()">Girar</button>
+        <button id="btn" onclick="ferramentaSecreta()">Roleta Premiada!</button>
+        <p id="message"></p>
+    </div>
 </body>
 </html>

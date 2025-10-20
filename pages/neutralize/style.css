@@ -90,16 +90,3 @@ header {
         }
     }
 }
-
-.slot-machine {
-    margin: 2em;   
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.reel {
-    width: 27vw;
-    height: 40vw;
-}
