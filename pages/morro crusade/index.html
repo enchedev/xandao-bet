@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pega bolsonaro</title>
+    <link rel="icon" type="image/x-icon" href="../../images/icon.ico">
+    <title>MORRO CRUSADE</title>
 
     <style>
         :root {
@@ -27,6 +28,7 @@
             display: flex;
             flex-direction: column;
             margin: auto;
+            margin-top: 2%;
         }
 
         #container .l {
@@ -64,6 +66,7 @@
             color: var(--tcolor);
             font-size: 3rem;
             text-align: center;
+            font-weight: 800;
             font-family: 'Courier New', Courier, monospace;
         }
         .subtitle {
@@ -82,7 +85,7 @@
             width: 100%;
             object-fit: fill;
             padding: none;
-            margin: none;
+            margin: 0px;
         }
 
         .background {
@@ -103,15 +106,26 @@
             position: absolute;
             top: 1%;
             right: 1%;
+            margin: 0px;
             color: greenyellow;
             font-family: 'Courier New', Courier, monospace;
             font-size: 2rem;
+        }
+        .try-again {
+            height: 5%;
+            width: 40%;
+            margin: auto;
+            color: blanchedalmond;
+            background-color: #000;
+            border: none;
+            display: none;
+            font-family: 'Courier New', Courier, monospace;
         }
     </style>
 </head>
 <body>
     <p class="xandcoins"></p>
-    <span class="title">Conquiste as favelas!</span>
+    <span class="title">† MORRO CRUSADE †</span>
     <span class="subtitle">O mais novo membro do PT, Stalin, fez parte de sua campanha uma assimilação das favelas do Rio de Janeiro como orgão essencial da economia brasileira. Como o mais novo protótipo do Partido Liberal, você foi encarregado de nivelar todos os morros antes que ele recrute-as.</span>
 
     <img src="../../images/favela.jpg" alt="plano de fundo" class="background">
@@ -133,7 +147,7 @@
             <button class="c c2" onclick="activate(2, 2)"></button>
         </div>
     </div>
-    <button>Play again</button>
+    <button class="try-again" onclick="window.location.reload()">Play again</button>
     <span class="warning"></span>
     <script src="index.js"></script>
 </body>

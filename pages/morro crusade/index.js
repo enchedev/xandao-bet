@@ -158,7 +158,6 @@ function activate(col, row) {
             else warningSpan.textContent = "O malandro ja pegou essa!";
             warningSpan.style.display = 'block';
         }
-
     }
 }
 
@@ -184,6 +183,7 @@ function checkWin() {
         //     for(cell of row)
         //         if(cell == 1) xands += 100;
         setCookie("xandcoins", xands, 10000);
+        document.querySelector('.try-again').style.display = 'block';
     }
     else if (
         (cellMap[0][0] == 2 && cellMap[0][1] == 2 && cellMap[0][2] == 2) ||
@@ -206,6 +206,7 @@ function checkWin() {
             for(cell of row)
                 if(cell == 2) xands -= 100;
         setCookie("xandcoins", xands, 10000);
+        document.querySelector('.try-again').style.display = 'block';
     }
 
 }
