@@ -51,7 +51,7 @@ function ferramentaSecreta() {
     reel1.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
     reel2.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
     reel3.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
-    if(count < 40) setTimeout(spin, 50);
+    if(count < 40) setTimeout(ferramentaSecreta, 50);
     else {
         var x = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
         reel1.src = x;
