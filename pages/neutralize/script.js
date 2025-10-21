@@ -1,13 +1,14 @@
 let area;
-let xandtext;
 let xandcoins;
 let speed = 1250;
 let multip = 1;
 
 window.addEventListener('DOMContentLoaded', function() {
+    console.log(this.localStorage);
     area = document.getElementById("spawning-area");
-    xandtext = this.document.getElementById("xandcoins");
-    xandcoins = getCookie("xandcoins");
+    xandcoins = localStorage.getItem("xandcoins");
+    if(!xandcoins || xandcoins == 'NaN') xandcoins = 0;
+    document.querySelector('.xandcoins p').textContent = xandcoins;
     createObject();
 });
 
@@ -15,20 +16,8 @@ function clamp(min, value, max) {
     return Math.min(Math.max(value, min), max);
 }
 
-function getCookie(cname) {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for(let i = 0; i <ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return "0";
+function setCookie(c_name, value) {
+    localStorage.setItem(c_name, value);
 }
 
 function createObject() {
@@ -56,7 +45,7 @@ function neutralizar() {
     multip++;
     document.querySelector('.xandcoins p').textContent = xandcoins;
     speed -= 35;
-    document.cookie = xandcoins;
+    setCookie("xandcoins", xandcoins);
 }
 
 function limpar() {

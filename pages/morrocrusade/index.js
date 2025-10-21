@@ -11,39 +11,10 @@ let cellMap = [
 ];
 
 // https://stackoverflow.com/questions/14573223/set-cookie-and-get-cookie-with-javascript
-function setCookie(c_name, value, exdays) {
-    var exdate = new Date();
-    exdate.setDate(exdate.getDate() + exdays);
-    var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
-    document.cookie = c_name + "=" + c_value;
+function setCookie(c_name, value) {
+    localStorage.removeItem("xandcoins");
+    localStorage.setItem(c_name, value);
 }
-function getCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-}
-
-function getCookie(cname) {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for(let i = 0; i <ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return "0";
-}
-
 
 document.addEventListener('DOMContentLoaded', () => {
     let container = document.querySelector('#container');
@@ -65,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-    xands = +getCookie("xandcoins");
+    xands = +localStorage.getItem("xandcoins");
+    
+    if(!xands || xands == 'NaN') xands = 0;
     updateXands();
 });
 
@@ -183,7 +156,7 @@ function checkWin() {
         document.querySelector('.title').textContent = "Great Ending!"
         document.querySelector('.subtitle').textContent = "O morro, agora sereno, canta louvores ao seu nome. Quinze novas vielas são nomeadas em sua honra, seu rosto agora parte da cultura da favela."
 
-        setCookie("xandcoins", xands, 10000);
+        setCookie("xandcoins", xands);
         document.querySelector('.try-again').style.display = 'block';
         return true;
     }
@@ -207,7 +180,7 @@ function checkWin() {
         for(row of cellMap) 
             for(cell of row)
                 if(cell == 2) xands -= 100;
-        setCookie("xandcoins", xands, 10000);
+        setCookie("xandcoins", xands);
         document.querySelector('.try-again').style.display = 'block';
         return true;
     }

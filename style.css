@@ -170,11 +170,10 @@ main {
 }
 
 footer{
-    height: 5%;
+    height: 30%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgb(22 ,22, 22);
 
     & a{
         font-weight:900;
