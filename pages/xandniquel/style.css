@@ -15,11 +15,14 @@ header {
     width: 100%;
     max-width: 100%;
     gap: 20em;
-    padding: 2em 0;
+    padding: 1%;
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
 
     & h1 {
         margin: 0;
         padding: 0 1.2em;
+        color: white;
 
         & span{
             color: rgb(13, 160, 13);
@@ -47,7 +50,7 @@ header {
                     font-size: 1.4em;
 
                     &:hover {
-                        background-color: rgb(77, 77, 77);
+                        background-color: grey;
                     }
                 }
             }
@@ -73,7 +76,7 @@ header {
                 display: none;
                 position: absolute;
                 left: -100%;
-                background-color: rgb(56, 56, 56);
+                background-color: rgb(85, 82, 82);
                 width: 20em;
                 padding: 1em;
                 text-align: center;
@@ -102,4 +105,25 @@ header {
 .reel {
     width: 27vw;
     height: 40vw;
+}
+
+.xandcoins {
+    position: absolute;
+    top: 10%;
+    right: 1%;
+    margin: 0px;
+    display: flex;
+    flex-direction: row;
+
+    & p {
+        color: greenyellow;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 2rem;  
+        margin: 0px; 
+    } 
+
+    & img {
+        height: 2rem;
+        margin-left: 2%;
+    }
 }
