@@ -1,4 +1,4 @@
-body, main {
+body {
     height: 100vh;
     margin: 0px;
     margin: 0;
@@ -70,6 +70,10 @@ header {
                 padding: 0;
                 cursor: pointer;
                 border: none;
+
+                &:hover {
+                    background-color: rgb(85, 82, 82);
+                }
             }
     
             & .dropdown-content {
@@ -155,11 +159,29 @@ main {
             & p{
                 & span{
                     color: rgb(43, 42, 42);
-                }
-                & span:hover{
+                    
+                    &:hover{
                     color: white;
                 }
+                }
             }
+        }
+    }
+}
+
+footer{
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    & a{
+        font-weight:900;
+        text-decoration: none;
+        color: rgb(13, 160, 13);
+
+        &:hover{
+            text-decoration:underline;
         }
     }
 }
