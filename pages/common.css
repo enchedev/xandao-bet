@@ -46,7 +46,7 @@ header {
             }
         }
 
-        & .dropdown {
+        & .dropdown {   
             position: relative;
             font-size: 1rem;
             display: block;
@@ -66,9 +66,9 @@ header {
                 display: none;
                 position: absolute;
                 left: -100%;
-                background-color: rgb(85, 82, 82);
+                background-color: rgb(34, 34, 34);
                 width: 20em;
-                padding: 1em;
+                padding-bottom: 5%;
                 text-align: center;
         
                 & a {
