@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XandNíquel</title>
+    <link rel="icon" type="image/x-icon" href="../../images/icons/icon.ico">
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="script.js"></script>
+    <script src="../dropdown.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>XANDÃO <span>BET</span></h1>
+        <nav class="nav">
+            <ul class="myList">
+                <li class="listItem">
+                    <a href="../index/index.html">Sobre</a>
+                </li>
+                <li class="listItem">
+                    <div class="dropdown">
+                        <button class="dropbtn" onclick="dropdown()">Minigames</button>
+                        <div id="myDropdown" class="dropdown-content">
+                            <a href="../neutralize/index.html">Neutralize a petralha!</a>
+                            <a href="../morrocrusade/index.html">Morro Crusade</a>
+                            <a href="">Xandníquel</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div class="xandcoins"><p></p> <img src="../../images/xandcoin.png" alt="xC"></div>
+
+    <div class="slot-machine">
+        <div class="reels">
+            <img class="reel" id="reel-1"></img>
+            <img class="reel" id="reel-2"></img>
+            <img class="reel" id="reel-3"></img>
+        </div>
+        <button id="btn" onclick="spin()">Girar</button>
+        <button id="btn" onclick="ferramentaSecreta()">Roleta Premiada!</button>
+        <p id="message"></p>
+    </div>
+</body>
+</html>

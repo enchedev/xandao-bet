@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../../images/icons/icon.ico">
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <title>Neutralize a Petralha</title>
+    <script src="../dropdown.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        #spawning-area {
+            background-image: url("https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/12/45/6f/fachada-com-jardim.jpg?w=1200&h=-1&s=1");
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 80vh;
+            margin: 1%;
+        }
+        #lula {
+            height: clamp(70px, 12%, 150px);
+            width: clamp(70px, 12%, 150px);
+            position: absolute;
+            cursor: pointer;
+
+            & img {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+        }
+
+        h1 {
+            margin: 1em;
+        }
+    </style>
+    <script src="script.js"></script>
+</head>
+<body>
+    <header>
+        <h1>XANDÃO <span>BET</span></h1>
+        <nav class="nav">
+            <ul class="myList">
+                <li class="listItem">
+                    <a href="../index/index.html">Sobre</a>
+                </li>
+                <li class="listItem">
+                    <div class="dropdown">
+                        <button class="dropbtn" onclick="dropdown()">Minigames</button>
+                        <div id="myDropdown" class="dropdown-content">
+                            <a href="">Neutralize a petralha!</a>
+                            <a href="../morrocrusade/index.html">Morro Crusade</a>
+                            <a href="../xandniquel/index.html">Xandníquel</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div class="xandcoins"><p></p> <img src="../../images/xandcoin.png" alt="xC"></div>
+
+    <h1>Neutralize os Lulas antes que sumam!</h1>
+    <div id="spawning-area"></div>
+</body>
+</html>

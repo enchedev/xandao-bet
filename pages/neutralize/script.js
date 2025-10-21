@@ -2,6 +2,7 @@ let area;
 let xandtext;
 let xandcoins;
 let speed = 1250;
+let multip = 1;
 
 window.addEventListener('DOMContentLoaded', function() {
     area = document.getElementById("spawning-area");
@@ -51,10 +52,11 @@ function createObject() {
 function neutralizar() {
     const lula = document.getElementById('lula');
     lula.remove();
-    xandcoins++;
-    xandtext.innerHTML = "Você tem " + xandcoins + " Xandcoins";
+    xandcoins = parseInt(xandcoins) + parseInt  (10 * multip);
+    multip++;
+    document.querySelector('.xandcoins p').textContent = xandcoins;
     speed -= 35;
-    document.cookie = "xandcoins=" + xandcoins + ";";
+    document.cookie = xandcoins;
 }
 
 function limpar() {
