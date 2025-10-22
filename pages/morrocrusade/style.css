@@ -22,22 +22,22 @@ body {
     flex-direction: column;
     margin: auto;
     margin-top: 2%;
-}
 
-#container .l {
-    width: calc(33px * 3);
-    height: 33px;
-    /* height: calc(33px * 3); */
-    display: flex;
-    flex-direction: row;
-}
+    & .l {
+        width: calc(33px * 3);
+        height: 33px;
+        /* height: calc(33px * 3); */
+        display: flex;
+        flex-direction: row;
 
-#container .l div {
-    width: 33px;
-    height: 33px;
-    border-color: white;
-    border-radius: 0;
-    border-width: 2px;
+        & div {
+            width: 33px;
+            height: 33px;
+            border-color: white;
+            border-radius: 0;
+            border-width: 2px;
+        }
+    }
 }
 
 .c {
@@ -63,6 +63,7 @@ body {
     font-weight: 800;
     font-family: 'Courier New', Courier, monospace;
 }
+
 .subtitle {
     color: var(--tcolor);
     font-size: 1.2rem;
