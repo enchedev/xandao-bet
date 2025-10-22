@@ -1,16 +1,14 @@
-let ttc = document.getElementById('container');
-let over = false;
+let blockInput = false;
 let xands = 0;
 let warningSpan = document.querySelector('.warning');
 
-// [2] cells are padding since arrays are 0-indexed
 let cellMap = [
     [0, 0, 0],
     [0, 0, 0],
     [0, 0, 0]
 ];
 
-// https://stackoverflow.com/questions/14573223/set-cookie-and-get-cookie-with-javascript
+const delay = ms => new Promise(res => setTimeout(res, ms));
 function setCookie(c_name, value) {
     localStorage.removeItem("xandcoins");
     localStorage.setItem(c_name, value);
@@ -40,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(!xands || xands == 'NaN') xands = 0;
     updateXands();
+
+    // random chance of bot starting
+    if((Math.random() * 10) % 2) botGuess();
 });
 
 function draw() {
@@ -47,13 +48,13 @@ function draw() {
     console.log(x);
     if(x) return;
     document.documentElement.style.setProperty('--tcolor', 'lightblue');
-    over = true;
-    document.querySelector('.title').textContent = "Endless war ending."
+    blockInput = true;
+    document.querySelector('.title').textContent = "Empate."
     document.querySelector('.subtitle').textContent = "Você e Stalin, agora travados numa guerra sem fim, perpétuamente aterrorizam o morro, transformando-o num campo de guerra de proporções genocidas. Lutam até as favelas desmoronarem sob o peso de seus soldados, por uma terra onde ninguém mais vive."
     document.querySelector('.try-again').style.display = 'block';
 }
 
-function botGuess() {
+async function botGuess() {
     var row = -1; 
     var col = -1;
     var runs = 0;
@@ -81,12 +82,19 @@ function botGuess() {
 
     while((row == -1 || col == -1) && runs < 11) iterate();
     
-    if(!over)
+    if(!blockInput)
     {
+        warningSpan.textContent = 'Stalin está pensando...'
+        blockInput = true;
+
+        await delay((Math.random() * 1000));
         console.log("Bot chose ", row, ' ', col);
         cellMap[row][col] = 2;
         addImage('../../images/stalin colher.jpg', col, row)
         checkWin();
+        
+        blockInput = false;
+        warningSpan.textContent = ''
     }
 }
 
@@ -110,7 +118,7 @@ function updateXands() {
 function activate(col, row) {
     if(col > 3 || row > 3) throw(`Invalid index ${col} ${row}`);
 
-    if(!over)
+    if(!blockInput)
     {
         //reset warnings
         if(warningSpan.textContent !== '') warningSpan.textContent = '';
@@ -121,7 +129,7 @@ function activate(col, row) {
             console.log("Set at ", col, " ", row, " for ", 1);
             cellMap[col][row] = 1;
             addImage('../../images/supermito.jpg', row, col);
-            xands += 100;
+            xands += 10;
             
             updateXands();
             checkWin();
@@ -151,9 +159,9 @@ function checkWin() {
         (cellMap[0][0] == 1 && cellMap[1][1] == 1 && cellMap[2][2] == 1) ||
         (cellMap[0][2] == 1 && cellMap[1][1] == 1 && cellMap[2][0] == 1)
     ) {
-        over = true;
+        blockInput = true;
         document.documentElement.style.setProperty('--tcolor', 'lightgreen');
-        document.querySelector('.title').textContent = "Great Ending!"
+        document.querySelector('.title').textContent = "Vitória!"
         document.querySelector('.subtitle').textContent = "O morro, agora sereno, canta louvores ao seu nome. Quinze novas vielas são nomeadas em sua honra, seu rosto agora parte da cultura da favela."
 
         setCookie("xandcoins", xands);
@@ -173,8 +181,8 @@ function checkWin() {
         (cellMap[0][2] == 2 && cellMap[1][1] == 2 && cellMap[2][0] == 2)
     ){
         document.documentElement.style.setProperty('--tcolor', 'crimson');
-        over = true;
-        document.querySelector('.title').textContent = "Bad Ending..."
+        blockInput = true;
+        document.querySelector('.title').textContent = "Perda..."
         document.querySelector('.subtitle').textContent = "A favela se torna um dos eixos econômicos brasileiro, seu maior bem de exporte: Cocaína e jogadores de futebol. O estado cai aos joelhos ao ritmo que a quebrada se transforma numa utopia, o resto do país em inacabável taxa."
 
         for(row of cellMap) 

@@ -49,10 +49,13 @@ body {
 }
 
 .warning {
-    color: #ff8888;
+    color: lightsalmon;
     font-family: 'Courier New', Courier, monospace;
     margin-bottom: 3%;
-    max-height: 5%;
+    margin-left: 1%;
+    font-size: 1.5em;
+    font-weight: bold;
+    height: 7%;
 }
 
 .title {
