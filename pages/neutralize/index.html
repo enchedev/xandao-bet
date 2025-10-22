@@ -13,11 +13,13 @@
     <link rel="stylesheet" href="../common.css">
     <style>
         #spawning-area {
-            background-image: url("../../images/palacio-planalto.jpg");
+            background-image: url("../../images/planalto.jpg");
             background-repeat: no-repeat;
             background-size: cover;
             height: 80vh;
             margin: 1%;
+
+            border: 3px dashed red;
         }
         
         #lula {
@@ -25,17 +27,26 @@
             width: clamp(70px, 12%, 150px);
             position: absolute;
             cursor: pointer;
+            border: none;
+            background-color: #00000000;
 
             & img {
                 height: 100%;
                 width: 100%;
                 margin: 0;
                 padding: 0;
+                
+                object-fit: cover;
+                border: 2px dotted black;
             }
         }
 
-        h1 {
-            margin: 1em;
+        .title {
+            text-align: center;
+
+            & span {
+                color: lightcoral;
+            }
         }
     </style>
     <script src="script.js"></script>
@@ -64,7 +75,7 @@
     </header>
     <div class="xandcoins"><p></p> <img src="../../images/xandcoin.png" alt="xC"></div>
 
-    <h1>Neutralize os Esquerdalhas antes que sumam!</h1>
+    <h1 class="title">Neutralize os <span>Esquerdalhas</span> antes que sumam!</h1>
     <div id="spawning-area"></div>
 </body>
 </html>
