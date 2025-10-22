@@ -5,11 +5,12 @@ let multip = 1;
 let images = ["../../images/lula.jpeg", "../../images/stalin colher.jpg", "../../images/luiz inacio droid da silva.jpg"];
 
 window.addEventListener('DOMContentLoaded', function() {
-    console.log(this.localStorage);
     area = document.getElementById("spawning-area");
+
     xandcoins = localStorage.getItem("xandcoins");
     if(!xandcoins || xandcoins == 'NaN') xandcoins = 0;
     document.querySelector('.xandcoins p').textContent = xandcoins;
+    
     createObject();
 });
 
