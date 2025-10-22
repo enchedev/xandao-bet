@@ -1,0 +1,30 @@
+body, main {
+    margin: 0;
+    width: 100%;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    background-color: rgb(85, 82, 82);
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+}
+
+.xandcoins {
+    position: absolute;
+    top: 10%;
+    right: 1%;
+    margin: 0px;
+    display: flex;
+    flex-direction: row;
+
+    & p {
+        color: greenyellow;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 2rem;  
+        margin: 0px; 
+    } 
+
+    & img {
+        height: 2rem;
+        margin-left: 2%;
+    }
+}

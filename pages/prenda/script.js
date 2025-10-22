@@ -2,7 +2,6 @@ let area;
 let xandcoins;
 let speed = 1250;
 let multip = 1;
-let images = ["../../images/lula.jpeg", "../../images/stalin colher.jpg", "../../images/luiz inacio droid da silva.jpg"];
 
 window.addEventListener('DOMContentLoaded', function() {
     console.log(this.localStorage);
@@ -25,7 +24,7 @@ function createObject() {
     limpar();
 
     var image = document.createElement("img");
-    image.src = images[Math.floor(Math.random() * images.length)];
+    image.src = "../../images/bolsonaro celular.jpg";
 
     var newObject = document.createElement("button");
     newObject.setAttribute("id", "lula");
