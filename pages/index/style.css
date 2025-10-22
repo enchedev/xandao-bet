@@ -50,7 +50,7 @@ header {
                     font-size: 1.4em;
 
                     &:hover {
-                        background-color: rgb(77, 77, 77);
+                        background-color: gray;
                     }
                 }
             }
@@ -72,7 +72,7 @@ header {
                 border: none;
 
                 &:hover {
-                    background-color: rgb(85, 82, 82);
+                    background-color: gray;
                 }
             }
     
