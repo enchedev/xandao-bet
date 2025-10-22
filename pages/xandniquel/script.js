@@ -13,6 +13,7 @@ var reel2;
 var reel3;
 var btn;
 var message;
+var xandcoins = 0;
 
 window.addEventListener('DOMContentLoaded', function() {
     reel1 = document.getElementById('reel-1');
@@ -20,12 +21,25 @@ window.addEventListener('DOMContentLoaded', function() {
     reel3 = document.getElementById('reel-3');
     btn = document.getElementById('btn');
     message = document.getElementById('message');
+
+    xandcoins = this.localStorage.getItem("xandcoins");
+    if(!xandcoins || xandcoins == 'NaN') xandcoins = 0;
+    document.querySelector('.xandcoins p').textContent = xandcoins;
 });
+
+function setCookie(c_name, value) {
+    localStorage.setItem(c_name, value);
+}
 
 let count = 0;
 
 function spin() {
     if(count == 0) {
+        if(xandcoins < 50) {
+            message.textContent = "Falta Xandcoins! Vá desviar mais verba!!!";
+            return;
+        }
+        changeXands(-50);
         message.textContent = "";
         btn.onclick = "";
     }
@@ -65,7 +79,14 @@ function ferramentaSecreta() {
 }
 
 function check() {
-    if(reel1.src == reel2.src && reel2.src == reel3.src) {
+    if(reel1.src == reel2.src && reel2.src == reel3.src) { // vitoria
         message.textContent = "Jackpot";
+        changeXands(500);
     }
+}
+
+function changeXands(coinsChange) {
+    xandcoins = parseInt(xandcoins) + parseInt(coinsChange);
+    setCookie("xandcoins", xandcoins);
+    document.querySelector('.xandcoins p').textContent = xandcoins;
 }
