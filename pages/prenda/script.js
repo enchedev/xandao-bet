@@ -2,14 +2,17 @@ let area;
 let xandcoins;
 let speed = 1250;
 let multip = 1;
+let start;
+const ninguem = new Audio("../../audio/bolsonaro-ninguem.mp3");
+const pegaram = new Audio("../../audio/bolsonaro-pegaram.mp3");
 
 window.addEventListener('DOMContentLoaded', function() {
-    console.log(this.localStorage);
     area = document.getElementById("spawning-area");
+    start = document.getElementById("start");
+
     xandcoins = localStorage.getItem("xandcoins");
     if(!xandcoins || xandcoins == 'NaN') xandcoins = 0;
     document.querySelector('.xandcoins p').textContent = xandcoins;
-    createObject();
 });
 
 function clamp(min, value, max) {
@@ -18,6 +21,12 @@ function clamp(min, value, max) {
 
 function setCookie(c_name, value) {
     localStorage.setItem(c_name, value);
+}
+
+function comecar() {
+    start.onclick = "";
+    ninguem.play();
+    createObject();
 }
 
 function createObject() {
@@ -46,6 +55,7 @@ function neutralizar() {
     document.querySelector('.xandcoins p').textContent = xandcoins;
     speed -= 35;
     setCookie("xandcoins", xandcoins);
+    pegaram.play();
 }
 
 function limpar() {
