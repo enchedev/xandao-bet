@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!xands || xands == 'NaN') xands = 0;
     updateXands();
 
-    // random chance of bot starting
-    if((Math.random() * 10) % 2) botGuess();
+    // 1 in 5 chance of bot starting
+    if((Math.random() * 10) % 5 === 1) botGuess();
 });
 
 function draw() {
@@ -115,7 +115,7 @@ function updateXands() {
     document.querySelector('.xandcoins p').textContent = xands;
 }
 
-function activate(col, row) {
+async function activate(col, row) {
     if(col > 3 || row > 3) throw(`Invalid index ${col} ${row}`);
 
     if(!blockInput)
@@ -133,7 +133,7 @@ function activate(col, row) {
             
             updateXands();
             checkWin();
-            botGuess();
+            await botGuess();
         }
         else {
             if(cellMap[col][row] === 1) {
@@ -192,5 +192,12 @@ function checkWin() {
         document.querySelector('.try-again').style.display = 'block';
         return true;
     }
+    
+    let empty = cellMap.filter(row => row.filter(cell => cell === 0).length > 0);
+    if(empty.length === 0 && !blockInput) {
+        return true;
+        draw();
+    } 
+
     return false;
 }
