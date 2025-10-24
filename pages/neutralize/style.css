@@ -6,6 +6,7 @@ body, main {
     background-color: rgb(33, 33, 33);
     font-family: 'Courier New', Courier, monospace;
     color: white;
+    text-align: center;
 }
 
 .xandcoins {

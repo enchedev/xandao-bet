@@ -3,7 +3,7 @@ body, main {
     width: 100%;
     overflow-wrap: break-word;
     text-overflow: ellipsis;
-    background-color: rgb(85, 82, 82);
+    background-color: rgb(33, 33, 33);
     font-family: 'Courier New', Courier, monospace;
     color: white;
     text-align: center;
