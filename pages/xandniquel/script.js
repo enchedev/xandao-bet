@@ -11,6 +11,7 @@ const reelSymbols = [
 var reel1;
 var reel2;
 var reel3;
+var reelUrls = ['', '', ''];
 var btn;
 var premium;
 var message;
@@ -66,12 +67,17 @@ function spin() {
         audio.play();
     }
     count++;
-    reel1.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
-    reel2.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
-    reel3.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
+    reelUrls[0] = Math.floor(Math.random() * reelSymbols.length);
+    reelUrls[1] = Math.floor(Math.random() * reelSymbols.length);
+    reelUrls[2] = Math.floor(Math.random() * reelSymbols.length);
+
+    reel1.src = reelSymbols[reelUrls[0]];
+    reel2.src = reelSymbols[reelUrls[1]];
+    reel3.src = reelSymbols[reelUrls[2]];
+
     if(count < 47) setTimeout(spin, 50);
     else {
-        check();
+        check(reelUrls[0]);
         return;
     }
 }
