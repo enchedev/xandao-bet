@@ -90,7 +90,7 @@ async function botGuess() {
         await delay((Math.random() * 1000));
         console.log("Bot chose ", row, ' ', col);
         cellMap[row][col] = 2;
-        addImage('../../images/stalin colher.jpg', col, row)
+        addImage('../../images/stalincolher.jpg', col, row)
         checkWin();
         
         blockInput = false;

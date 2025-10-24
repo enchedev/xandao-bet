@@ -2,7 +2,7 @@ let area;
 let xandcoins;
 let speed = 1250;
 let multip = 1;
-const images = ["../../images/lula.jpeg", "../../images/stalin colher.jpg", "../../images/luiz inacio droid da silva.jpg"];
+const images = ["../../images/lula.jpeg", "../../images/stalincolher.jpg", "../../images/luizinaciodroiddasilva.jpg"];
 
 window.addEventListener('DOMContentLoaded', function() {
     area = document.getElementById("spawning-area");

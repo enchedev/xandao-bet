@@ -3,9 +3,10 @@ body, main {
     width: 100%;
     overflow-wrap: break-word;
     text-overflow: ellipsis;
-    background-color: rgb(85, 82, 82);
+    background-color: rgb(33, 33, 33);
     font-family: 'Courier New', Courier, monospace;
     color: white;
+    text-align: center;
 }
 
 .slot-machine {
@@ -40,4 +41,23 @@ body, main {
         height: 2rem;
         margin-left: 2%;
     }
+}
+
+#btn, #premium {
+    margin: 0.4em;
+    padding: 0.6em 1.5em;
+    border-radius: 10px;
+    border: 2px solid gold;
+    background: linear-gradient(180deg, #ffda57, #b8860b);
+    color: #1a1a1a;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+    transition: 0.25s;
+
+    &:hover {
+    background: linear-gradient(180deg, #fff066, #ffda57);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
 }
