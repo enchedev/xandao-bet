@@ -39,14 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!xands || xands == 'NaN') xands = 0;
     updateXands();
 
-    // 1 in 5 chance of bot starting
-    if((Math.random() * 10) % 5 === 1) botGuess();
+    // 1 in r chance of bot starting
+    var chance = Math.trunc(Math.random() * 10);
+    if(chance % 3 === 1) botGuess();
 });
 
 function draw() {
-    var x = checkWin();
-    console.log(x);
-    if(x) return;
+    // if(checkWin()) return;
     document.documentElement.style.setProperty('--tcolor', 'lightblue');
     blockInput = true;
     document.querySelector('.title').textContent = "Empate."
@@ -70,16 +69,16 @@ async function botGuess() {
                 if(cellMap[index][subin] === 0 && Math.trunc(Math.random() * 100) % 2 === 1) {
                     row = index;
                     col = subin;
-
+                    
                     stop = true;
                     break;
                 }
             }
             if(stop) break;
-        }
+        }   
         runs++;
     }
-
+    
     while((row == -1 || col == -1) && runs < 11) iterate();
     
     if(!blockInput)
@@ -94,8 +93,8 @@ async function botGuess() {
         checkWin();
         
         blockInput = false;
-        warningSpan.textContent = ''
     }
+    warningSpan.textContent = ''
 }
 
 function addImage(where, row, col) {
@@ -195,8 +194,9 @@ function checkWin() {
     
     let empty = cellMap.filter(row => row.filter(cell => cell === 0).length > 0);
     if(empty.length === 0 && !blockInput) {
-        return true;
         draw();
+        blockInput = true;
+        return true;
     } 
 
     return false;
