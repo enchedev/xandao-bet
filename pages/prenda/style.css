@@ -1,12 +1,15 @@
-body, main {
+body {
     margin: 0;
     width: 100%;
     overflow-wrap: break-word;
     text-overflow: ellipsis;
-    background-color: rgb(33, 33, 33);
+    background-color: rgb(22, 22, 22);
     font-family: 'Courier New', Courier, monospace;
     color: white;
     text-align: center;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .xandcoins {
@@ -30,14 +33,46 @@ body, main {
     }
 }
 
+#start {
+    height: 10%;
+    width: 40%;
+    margin: auto;
+    color: greenyellow;
+    font-weight: 1000;
+    font-size: 1rem;
+    background-color: rgb(44, 44, 44);
+    border: 1px greenyellow solid;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* fallback */
+/* #start {
+    height: 2rem;
+    width: 50%;
+    margin: auto;
+
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-family: 'Courier New', Courier, monospace;
+    
+    color: darkgreen;
+    border: 3px solid rgb(22, 22, 22);
+    border-radius: 5px;
+    font-weight: 1000;
+    font-size: 1.3rem;
+    background-image: linear-gradient(to right, green, yellow);
+    border: none;
+} */
+
 #spawning-area {
     background-image: url("../../images/planalto.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     height: 80vh;
     margin: 1%;
+    /* margin-top: 0.5%; */
 
-    border: 3px dashed rgb(8, 139, 25);
+    border: 3px dashed rgb(9, 178, 31);
 }
 
 #lula {

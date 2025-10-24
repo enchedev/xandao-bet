@@ -27,6 +27,8 @@ function comecar() {
     start.onclick = "";
     ninguem.play();
     createObject();
+
+    document.querySelector('#start').style.display = 'none';
 }
 
 function createObject() {
@@ -55,6 +57,12 @@ function neutralizar() {
     document.querySelector('.xandcoins p').textContent = xandcoins;
     speed -= 35;
     setCookie("xandcoins", xandcoins);
+    
+    if(!pegaram.ended) {
+        pegaram.pause();
+        pegaram.currentTime = 0;
+    }
+
     pegaram.play();
 }
 

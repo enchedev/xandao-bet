@@ -43,6 +43,8 @@ window.addEventListener('DOMContentLoaded', function() {
     reel1.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
     reel2.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
     reel3.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
+
+    this.document.querySelector('.casino').style.height = this.document.body.offsetHeight + 'px';
 });
 
 function setCookie(c_name, value) {
