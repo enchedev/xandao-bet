@@ -132,15 +132,14 @@ function changeXands(coinsChange) {
 
 function confettiCelebration() {
     confetti({
-        particleCount: 1000,
+        particleCount: 700,
         spread: 800,
         origin: { y: 0.6 }
     });
 
-    // Pequenos disparos extras para dar um efeito mais natural
     setTimeout(() => {
         confetti({
-            particleCount: 750,
+            particleCount: 500,
             spread: 1000,
             origin: { x: 0.2, y: 0.6 },
             colors: ['#FFD700', '#FF4500', '#00FF7F', '#1E90FF']
@@ -149,7 +148,7 @@ function confettiCelebration() {
 
     setTimeout(() => {
         confetti({
-            particleCount: 750,
+            particleCount: 500,
             spread: 1000,
             origin: { x: 0.8, y: 0.6 },
             colors: ['#FFD700', '#FF69B4', '#00CED1', '#ADFF2F']
@@ -158,7 +157,7 @@ function confettiCelebration() {
 
     setTimeout(() => {
         confetti({
-            particleCount: 750,
+            particleCount: 500,
             spread: 1000,
             origin: { y: 0.6 },
             colors: ['#FFD700', '#FF4500', '#00FF7F', '#1E90FF']
@@ -167,7 +166,7 @@ function confettiCelebration() {
 
     setTimeout(() => {
         confetti({
-            particleCount: 750,
+            particleCount: 500,
             spread: 1000,
             origin: { x: 0.2, y: 0.6 },
             colors: ['#FFD700', '#FF4500', '#00FF7F', '#1E90FF']
@@ -176,7 +175,7 @@ function confettiCelebration() {
 
     setTimeout(() => {
         confetti({
-            particleCount: 750,
+            particleCount: 500,
             spread: 1000,
             origin: { x: 0.8, y: 0.6 },
             colors: ['#FFD700', '#FF69B4', '#00CED1', '#ADFF2F']
