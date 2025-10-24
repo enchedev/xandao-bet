@@ -25,6 +25,10 @@ window.addEventListener('DOMContentLoaded', function() {
     xandcoins = this.localStorage.getItem("xandcoins");
     if(!xandcoins || xandcoins == 'NaN') xandcoins = 0;
     document.querySelector('.xandcoins p').textContent = xandcoins;
+    
+    reel1.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
+    reel2.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
+    reel3.src = reelSymbols[Math.floor(Math.random() * reelSymbols.length)];
 });
 
 function setCookie(c_name, value) {
