@@ -8,7 +8,7 @@ header {
     align-items: center;
     background-color: black;
     max-width: 100%;
-    gap: 20em;
+    gap: 20vw;
     padding: 1%;
     font-family: 'Courier New', Courier, monospace;
     color: white;
@@ -25,14 +25,14 @@ header {
 
     & .nav{
         display: flex;
-        flex:1;
+        flex: 1;
         justify-content: center;
 
         & .myList{
             padding: 0;
             margin: 0;
             justify-content: space-around;
-            gap: 10em;
+            gap: 12vw;
             list-style-type: none;
             display: flex;
     
@@ -72,6 +72,7 @@ header {
                 left: -100%;
                 background-color: black;
                 width: 20em;
+                max-width: 100vw;
                 padding-bottom: 10%;
                 padding-top: 10%;
                 
@@ -90,5 +91,23 @@ header {
     
             & .dropdown-content.show {display:block;}
         }
+    }
+}
+
+@media (max-width: 746px) {
+    header {
+        flex-direction: column;
+        gap: 5vw;
+        padding: 2vw;
+
+        & .nav {
+            gap: 5vw;
+        }
+    }
+}
+
+@media (max-width: 630px) {
+    p {
+        font-size: 0.75em;
     }
 }

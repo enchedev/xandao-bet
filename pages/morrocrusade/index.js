@@ -14,6 +14,11 @@ function setCookie(c_name, value) {
     localStorage.setItem(c_name, value);
 }
 
+window.onresize = () => {
+    window.location.reload();
+};
+
+
 document.addEventListener('DOMContentLoaded', () => {
     let container = document.querySelector('#container');
 
@@ -60,7 +65,9 @@ async function botGuess() {
 
     function iterate() 
     {
-        if(runs === 10) draw();
+        if(runs === 10) { 
+            checkWin();
+        }
 
         var stop = false;
         for (index = 0; index < cellMap.length; ++index) {

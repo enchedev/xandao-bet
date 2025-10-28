@@ -83,7 +83,7 @@ body {
     transition: 0.25s;
 
     &:hover {
-    background: linear-gradient(180deg, #fff066, #ffda57);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
-}
+        background: linear-gradient(180deg, #fff066, #ffda57);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
 }
