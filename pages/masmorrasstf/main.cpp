@@ -1,9 +1,12 @@
 #include <raylib.h>
 #include <string>
 #include <vector>
+#include <math.h>
 #include <rlgl.h>
 #include <cstring>
 #include <chrono>
+#include "./renderer.cpp"
+#include "./map.h"
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -12,109 +15,79 @@ using namespace std::chrono_literals;
 #define TIMEOUT 1s
 #define MAP_WIDTH 8
 #define MAP_HEIGHT 9
-#define TRANSITION_TIMEOUT 200ms
+#define TURNTIME 600ms
 #define FSTR \ 
-"0:0, 0 0, 0 0, 1 1, 0 0;\
-0:1, 0 0, 0 0, 1 1, 0 0;\
-0:2, 1 1, 0 0, 0 0, 0 0;\
-0:3, 1 1, 1 1, 0 0, 0 0;\
-0:4, 0 0, 1 1, 1 1, 0 0;\
-0:5, 0 0, 0 0, 1 1, 0 0;\
-0:6, 1 1, 0 0, 0 0, 0 0;\
-0:7, 1 1, 0 0, 1 1, 0 0;\
-1:0, 0 0, 0 0, 1 1, 1 1;\
-1:1, 0 0, 0 0, 1 1, 1 1;\
-1:2, 1 1, 0 0, 1 1, 0 0;\
-1:3, 1 1, 1 1, 0 0, 0 0;\
-1:4, 0 0, 1 1, 0 0, 1 1;\
-1:5, 0 0, 0 0, 1 1, 1 1;\
-1:6, 0 0, 0 0, 0 0, 0 0;\
-1:7, 0 0, 0 0, 1 1, 1 1;\
-2:0, 1 1, 0 0, 0 0, 1 1;\
-2:1, 1 1, 1 1, 0 0, 1 1;\
-2:2, 1 1, 1 1, 0 0, 1 1;\
-2:3, 1 1, 1 1, 0 0, 0 0;\
-2:4, 1 1, 1 1, 1 1, 0 0;\
-2:5, 1 1, 1 1, 1 1, 1 1;\
-2:6, 0 0, 1 1, 1 1, 0 0;\
-2:7, 0 0, 0 0, 1 1, 1 1;\
-3:0, 1 1, 0 0, 1 1, 0 0;\
-3:1, 1 1, 1 1, 0 0, 0 0;\
-3:2, 1 1, 1 1, 1 1, 0 0;\
-3:3, 0 0, 1 1, 1 1, 0 0;\
-3:4, 0 0, 0 0, 1 1, 1 1;\
-3:5, 0 0, 0 0, 0 0, 1 1;\
-3:6, 1 1, 0 0, 0 0, 1 1;\
-3:7, 0 0, 1 1, 1 1, 1 1;\
-4:0, 1 1, 0 0, 0 0, 1 1;\
-4:1, 0 0, 1 1, 1 1, 0 0;\
-4:2, 0 0, 0 0, 1 1, 1 1;\
-4:3, 1 1, 0 0, 0 0, 1 1;\
-4:4, 1 1, 1 1, 0 0, 1 1;\
-4:5, 1 1, 1 1, 0 0, 0 0;\
-4:6, 1 1, 1 1, 0 0, 0 0;\
-4:7, 0 0, 1 1, 0 0, 1 1;\
-5:0, 1 1, 0 0, 1 1, 0 0;\
-5:1, 0 0, 1 1, 1 1, 1 1;\
-5:2, 1 1, 0 0, 0 0, 1 1;\
-5:3, 1 1, 1 1, 1 1, 0 0;\
-5:4, 1 1, 1 1, 0 0, 0 0;\
-5:5, 0 0, 1 1, 1 1, 0 0;\
-5:6, 0 0, 0 0, 0 0, 0 0;\
-5:7, 0 0, 0 0, 0 0, 0 0;\
-6:0, 0 0, 0 0, 1 1, 1 1;\
-6:1, 0 0, 0 0, 1 1, 1 1;\
-6:2, 1 1, 0 0, 1 1, 0 0;\
-6:3, 1 1, 1 1, 0 0, 1 1;\
-6:4, 0 0, 1 1, 1 1, 0 0;\
-6:5, 0 0, 0 0, 1 1, 1 1;\
-6:6, 0 0, 0 0, 0 0, 0 0;\
-6:7, 0 0, 0 0, 0 0, 0 0;\
-7:0, 0 0, 0 0, 1 1, 1 1;\
-7:1, 1 1, 0 0, 0 0, 1 1;\
-7:2, 0 0, 1 1, 0 0, 1 1;\
-7:3, 0 0, 0 0, 1 1, 1 1;\
-7:4, 0 0, 0 0, 0 0, 0 0;\
-7:5, 0 0, 0 0, 1 1, 1 1;\
-7:6, 0 0, 0 0, 0 0, 0 0;\
-7:7, 0 0, 0 0, 0 0, 0 0;\
-8:0, 1 1, 0 0, 0 0, 1 1;\
-8:1, 1 1, 1 1, 0 0, 0 0;\
-8:2, 1 1, 1 1, 0 0, 0 0;\
-8:3, 1 1, 1 1, 0 0, 0 0;\
-8:4, 0 0, 1 1, 0 0, 1 1;\
-8:5, 1 1, 0 0, 0 0, 1 1;\
-8:6, 0 0, 1 1, 1 1, 0 0;\
-8:7, 0 0, 0 0, 0 0, 0 0;"
 
 #define ARR_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
-void DrawLeftWall(Texture2D texture, Vector3 position, float width, float height, float length, Color color); // Draw cube textured
-void DrawRightWall(Texture2D texture, Vector3 position, float width, float height, float length, Color color); // Draw cube textured
-void DrawFrontWall(Texture2D texture, Vector3 position, float width, float height, float length, Color color); // Draw cube textured
-void DrawFloor(Texture2D texture, Vector3 position, float width, float height, float length, Color color); // Draw cube textured
-void DrawCeiling(Texture2D texture, Vector3 position, float width, float height, float length, Color color); // Draw cube textured
+std::string directionMap[] = {
+    "LEFT",
+    "RIGHT",
+    "BACK",
+    "FRONT",
+};
 
-Texture2D LoadTextureRot(const char *fileName, int deg)
-{
-    Texture2D texture = { 0 };
+enum Direction {
+    LEFT  = 0,
+    RIGHT = 1,
+    FRONT = 2,
+    BACK  = 3,
+};
 
-    Image image = LoadImage(fileName);
+enum AppState {
+    DEFAULT,
+    WALK_IN,
+    WALK_OUT,
+    INIT,
+    DEAD,
+    WIN,
+    TURN_LEFT,
+    TURN_RIGHT,
+};
 
-    if (image.data != NULL)
-    {
-        ImageRotate(&image, deg);
-        texture = LoadTextureFromImage(image);
-        UnloadImage(image);
+struct Lula {
+    unsigned int x;
+    unsigned int y;
+};
+
+template <typename T = int>
+struct Passage {
+    int passable;
+    T path;
+
+    Passage(int pass, T p) {
+        memcpy(&path, &p, sizeof(p));
+        passable = pass;
     }
 
-    return texture;
-}
+    Passage() {
 
-inline float Lerp(float start, float end, float amount)
-{
-    return  start + amount*(end - start);
-}
+    }
+};
+
+struct ShallowRoom {
+    Passage<> paths[4];
+};
+
+struct Room {
+    Passage<Texture2D*> paths[4];
+};
+
+struct PlayerInfo {
+    Direction facing = FRONT;
+    unsigned int x = 0;
+    unsigned int y = 0;
+    unsigned int endX = 0;
+    unsigned int endY = 0;
+    Room room;
+} player;
+
+ShallowRoom rooms[9][9];
+Texture2D textureDict[32] = {};
+const int screenWidth = 800;
+const int screenHeight = 450;
+
+inline float Lerp(float start, float end, float amount) { return  start + amount*(end - start); }
 
 void DrawCenteredText(const char* text, int fontSize, Color color, int xOffset = 0, int yOffset = 0) {
     // Get the size of the text to draw
@@ -127,102 +100,6 @@ void DrawCenteredText(const char* text, int fontSize, Color color, int xOffset =
     
     // Draw the text
     DrawTextEx(GetFontDefault(), text, textPos, fontSize, fontSize*.1f, color);
-}
-
-Texture2D textureDict[32] = {};
-
-std::string map[] = {
-    "LEFT",
-    "RIGHT",
-    "BACK",
-    "FRONT",
-};
-enum Direction {
-    LEFT =      0,
-    RIGHT =     1,
-    BACK =      2,
-    FRONT =   3,
-};
-
-template <typename T = int>
-struct Passage {
-    bool passable;
-    T path;
-
-    Passage(bool pass, T p) {
-        memcpy(&path, &p, sizeof(p));
-        passable = pass;
-    }
-
-    Passage() {
-
-    }
-};
-
-struct ShallowRoom {
-
-    Passage<> paths[4];
-
-    ShallowRoom() {
-        paths[LEFT] = {false, {}};
-        paths[RIGHT] = {false, {}};
-        paths[BACK] = {false, {}};
-        paths[FRONT] = {false, {}};
-    }
-    ShallowRoom(
-        Passage<> left, 
-        Passage<> right, 
-        Passage<> front, 
-        Passage<> back
-    ) {
-        paths[LEFT] = {left};
-        paths[RIGHT] = {right};
-        paths[BACK] = {back};
-        paths[FRONT] = {front};
-    }
-};
-
-struct Room {
-    Passage<Texture2D*> paths[4];
-
-    Room() {
-        paths[LEFT] = {false, {}};
-        paths[RIGHT] = {false, {}};
-        paths[BACK] = {false, {}};
-        paths[FRONT] = {false, {}};
-    }
-    Room(
-        Passage<Texture2D*> left, 
-        Passage<Texture2D*> right, 
-        Passage<Texture2D*> front, 
-        Passage<Texture2D*> back
-    ) {
-        paths[LEFT] = {left};
-        paths[RIGHT] = {right};
-        paths[BACK] = {back};
-        paths[FRONT] = {front};
-    }
-};
-
-Room LoadRoom(ShallowRoom reference) {
-    return {
-        Passage<Texture2D*> {
-            reference.paths[LEFT].passable,
-            &textureDict[reference.paths[LEFT].path]
-        },
-        Passage<Texture2D*> {
-            reference.paths[RIGHT].passable,
-            &textureDict[reference.paths[RIGHT].path]
-        },
-        Passage<Texture2D*> {
-            reference.paths[FRONT].passable,
-            &textureDict[reference.paths[FRONT].path]
-        },
-        Passage<Texture2D*> {
-            reference.paths[BACK].passable,
-            &textureDict[reference.paths[BACK].path]
-        },
-    };
 }
 
 void DrawMiniMap(Room room, Direction facing, bool destroy = false) {
@@ -247,7 +124,46 @@ void DrawMiniMap(Room room, Direction facing, bool destroy = false) {
         (20 + 15) - tmp[facing].width / 2, (20 + 15) - tmp[facing].height / 2, WHITE);    
 }
 
-void TurnLeft(Direction& facing) {
+Room LoadRoom(ShallowRoom unloaded) {
+    return {
+        Passage<Texture2D*> {
+            unloaded.paths[LEFT].passable,
+            &textureDict[unloaded.paths[LEFT].path]
+        },
+        Passage<Texture2D*> {
+            unloaded.paths[RIGHT].passable,
+            &textureDict[unloaded.paths[RIGHT].path]
+        },
+        Passage<Texture2D*> {
+            unloaded.paths[FRONT].passable,
+            &textureDict[unloaded.paths[FRONT].path]
+        },
+        Passage<Texture2D*> {
+            unloaded.paths[BACK].passable,
+            &textureDict[unloaded.paths[BACK].path]
+        },
+    };
+}
+
+void TurnRight(Direction& facing, AppState& state, Camera3D& camera) {
+    switch(facing) {
+        case LEFT:
+            facing = FRONT;
+        break;
+        case RIGHT:
+            facing = BACK;
+        break;
+        case FRONT:
+            facing = RIGHT;
+        break;
+        case BACK:
+            facing = LEFT;
+        break;
+    }
+    state = TURN_RIGHT;
+}
+
+void TurnLeft(Direction& facing, AppState& state, Camera3D& camera) {
     switch(facing) {
         case LEFT:
             facing = BACK;
@@ -262,11 +178,11 @@ void TurnLeft(Direction& facing) {
             facing = RIGHT;
         break;
     }
+    state = TURN_LEFT;
 }
 
-
 template<typename T = Room>
-bool Walk(unsigned int& cY, unsigned int& cX, T room, Direction facing, bool forward = true) {
+bool Walk(unsigned int& y, unsigned int& x, T room, Direction facing, bool forward = true) {
     switch(facing) {
         case LEFT: {
             if(!room.paths[LEFT].passable && forward)
@@ -274,8 +190,8 @@ bool Walk(unsigned int& cY, unsigned int& cX, T room, Direction facing, bool for
             else if(!room.paths[RIGHT].passable && !forward)
                 return true;
             else {
-                if(forward) cX++;
-                else cX--;
+                if(forward) x++;
+                else x--;
             }                
         }; break;
 
@@ -285,8 +201,8 @@ bool Walk(unsigned int& cY, unsigned int& cX, T room, Direction facing, bool for
             else if(!room.paths[LEFT].passable && !forward)
                 return true;
             else {
-                if(forward) cX--;
-                else cX++;
+                if(forward) x--;
+                else x++;
             }
         }; break;
 
@@ -297,8 +213,8 @@ bool Walk(unsigned int& cY, unsigned int& cX, T room, Direction facing, bool for
                 return true;
             else 
             {
-                if(forward) cY++;
-                else cY--;
+                if(forward) y++;
+                else y--;
             }
         }; break;
 
@@ -308,36 +224,14 @@ bool Walk(unsigned int& cY, unsigned int& cX, T room, Direction facing, bool for
             else if(!room.paths[FRONT].passable && !forward)
                 return true;
             else {
-                if(forward) cY--;
-                else cY++;
+                if(forward) y--;
+                else y++;
             }
         }; break;
     }
 
     return false;
 }
-
-void TurnRight(Direction& facing) {
-    switch(facing) {
-        case LEFT:
-            facing = FRONT;
-        break;
-        case RIGHT:
-            facing = BACK;
-        break;
-        case FRONT:
-            facing = RIGHT;
-        break;
-        case BACK:
-            facing = LEFT;
-        break;
-    }
-}
-
-struct Lula {
-    unsigned int x;
-    unsigned int y;
-};
 
 void LulaWalk(ShallowRoom room, Lula& lula) {
     Direction lulaBuffer[4];
@@ -370,73 +264,315 @@ void LulaWalk(ShallowRoom room, Lula& lula) {
                 (unsigned int)(rand() % MAP_HEIGHT),
             };
         }
+        if(lula.y < 0 )                 lula.y = 0;
+        else if(lula.y >= MAP_HEIGHT)   lula.y = MAP_HEIGHT;
+        else if(lula.x < 0 )            lula.x = 0;
+        else if(lula.x >= MAP_WIDTH)    lula.x = MAP_WIDTH;
     }
 }
 
-enum AppState {
-    DEFAULT,
-    WALK_IN,
-    WALK_OUT,
-    AWAIT,
-    INIT,
-};
+Lula InitLula() {
+    Lula lulinho;
+    do {
+        lulinho = {
+            (unsigned int)rand() % MAP_WIDTH, (unsigned int)rand() % MAP_HEIGHT
+        };
+    } while(lulinho.x = 0 || lulinho.y == 0);
 
-#define DARKNESS 6
+    return lulinho;
+}
 
-int main(void)
-{
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+Camera InitCamera() {
+    Camera cam;
+    cam.position = (Vector3){ 0.0f, 1.0f, 0.0f };
+    cam.target = (Vector3){ 0.0f, 1.0f, 1.0f };
+    cam.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+    cam.fovy = FOV;
+    cam.projection = CAMERA_PERSPECTIVE;
 
-    InitWindow(screenWidth, screenHeight, "Masmorras do STF");
-    InitAudioDevice();
-    
+    return cam;
+}
+
+void InitTextureDictionary() {
     textureDict[0] = LoadTextureRot("./res/bricks.png", 180);
     textureDict[1] = LoadTextureRot("./res/path.png", 180);
     textureDict[2] = LoadTextureRot("./res/carpet.png", 180);
-    textureDict[3] = LoadTextureRot("./res/dirt.png", 180);
+}
+
+void IntroCutscene(AppState& state, system_clock::time_point& timer) {
+    static int stage = 0;
+    
+    if(IsKeyPressed(KEY_SPACE)) {
+        stage++;
+        timer = system_clock::now(); // reset clock
+    }
+    
+    int fontSize = 40;
+    ClearBackground(BLACK);
+    switch(stage) {
+        case 0: {
+            char passages[][64] = {
+                "A energia caiu",
+                "durante o julgamento do",
+                "Bolsonaro",
+            };
+
+            DrawCenteredText(passages[0], fontSize, WHITE);
+            DrawCenteredText(passages[1], fontSize, WHITE, 0, fontSize * 2);
+            DrawCenteredText(passages[2], fontSize, GREEN, 0, fontSize * 4);
+        } break;
+        case 1: {    
+
+            char passages[][64] = {
+                "Como o juíz mais novo",
+                "no Supremo Tribunal Federal,",
+                "Alexandre de Moraes",
+                "te enviou para encontrar",
+                "e religar o dijuntor",
+            };
+
+            DrawCenteredText(passages[0], fontSize, WHITE, 0, fontSize * -4);
+            DrawCenteredText(passages[1], fontSize, WHITE, 0, fontSize * -2);
+            DrawCenteredText(passages[2], fontSize, WHITE, 0, 0);
+            DrawCenteredText(passages[3], fontSize, WHITE, 0, fontSize *  2);
+            DrawCenteredText(passages[4], fontSize, WHITE, 0, fontSize *  4);
+        } break;
+        case 2: state = DEFAULT; break;
+    }
+
+    if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
+        DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
+}
+
+void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_clock::time_point& timer, bool cleanup = false) {
+    static bool updateWalls = true;
+    static bool debug = false;
+
+    static Sound footsteps = LoadSound("./res/walk.wav");
+    static Texture2D floorTexture = LoadTexture("./res/carpet.png");
+    
+    static Passage<Texture2D*>* leftWall;
+    static Passage<Texture2D*>* frontWall;
+    static Passage<Texture2D*>* rightWall;
+
+    static Lula lula = InitLula();
 
 
-    Camera camera = { 0 };
-    camera.position = (Vector3){ 0.0f, 1.0f, 0.0f };
-    camera.target = (Vector3){ 0.0f, 1.0f, 1.0f };
-    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-    camera.fovy = FOV;
-    camera.projection = CAMERA_PERSPECTIVE;
+    // if(state == TURN_LEFT && duration_cast<milliseconds>(system_clock::now() - timer) >= TURNTIME) {
+    if(state == TURN_LEFT) {
+        if(camera.target.x < 1.75f) camera.target.x += 0.25f;
+        else
+        {
+            camera.target.x = 0.0f;
+            updateWalls = true;
+            state = DEFAULT;
+        }
+    }
+    if(state == TURN_RIGHT) {
+        if(camera.target.x > -1.75f) camera.target.x -= 0.25f;
+        else
+        {
+            camera.target.x = 0.0f;
+            updateWalls = true;
+            state = DEFAULT;
+        }
+    }
+
+    else if(IsKeyPressed(KEY_LEFT))
+    {
+        TurnLeft(player.facing, state, camera);
+        // updateWalls = true;
+    }
+    else if(IsKeyPressed(KEY_RIGHT))
+    {
+        TurnRight(player.facing, state, camera);
+        // updateWalls = true;
+    }
+    else if(IsKeyPressed(KEY_UP))
+    {
+        if(!Walk(player.y, player.x, player.room, player.facing))
+        {
+            if(player.y < 0 )               player.y = 0;
+            else if(player.y >= MAP_HEIGHT) player.y = MAP_HEIGHT - 1;
+            else if(player.x < 0 )          player.x = 0;
+            else if(player.x >= MAP_WIDTH)  player.x = MAP_WIDTH - 1;
+            else
+            {
+                if(IsSoundPlaying(footsteps)) StopSound(footsteps);
+                PlaySound(footsteps);
+
+                state = WALK_IN;
+                TraceLog(LOG_INFO, " ==> %d", rooms[player.y][player.x].paths[BACK].path);
+                updateWalls = true;
+            }
+        }
+    }
+    else if(IsKeyPressed(KEY_DOWN))
+    {
+        if(!Walk(player.y, player.x, player.room, player.facing, false))
+        {
+            if(player.y < 0 )                 player.y = 0;
+            else if(player.y >= MAP_HEIGHT)   player.y = MAP_HEIGHT - 1;
+            else if(player.x < 0 )            player.x = 0;
+            else if(player.x >= MAP_WIDTH)    player.x = MAP_WIDTH - 1;
+            else
+            {
+                // if(IsSoundPlaying(footsteps)) StopSound(footsteps);
+                // PlaySound(footsteps);
+
+                state = WALK_IN;
+                TraceLog(LOG_INFO, " ==> %d", rooms[player.y][player.x].paths[BACK].path);
+                player.room = LoadRoom(rooms[player.y][player.x]);
+                updateWalls = true;
+            }
+        }
+    }
+    else if(IsKeyPressed(KEY_D)) debug = !debug;
+
+    if(updateWalls) {
+        switch(player.facing) {
+            case BACK:
+                frontWall = &player.room.paths[BACK];
+                leftWall = &player.room.paths[RIGHT];
+                rightWall = &player.room.paths[LEFT];
+            break;
+            case FRONT:
+                frontWall = &player.room.paths[FRONT];
+                leftWall = &player.room.paths[LEFT];
+                rightWall = &player.room.paths[RIGHT];
+            break;
+            case LEFT:
+                frontWall = &player.room.paths[LEFT];
+                leftWall = &player.room.paths[BACK];
+                rightWall = &player.room.paths[FRONT];
+            break;
+            case RIGHT:
+                frontWall = &player.room.paths[RIGHT];
+                leftWall = &player.room.paths[FRONT];
+                rightWall = &player.room.paths[BACK];
+            break;
+        }
+        LulaWalk(rooms[lula.x][lula.y], lula);
+        TraceLog(LOG_INFO, "ELE %d %d", lula.x, lula.y);
+    }
+
+    if(state == WALK_IN)
+    {
+        if(camera.fovy < 50) {
+            TraceLog(LOG_INFO, "%.1f", camera.fovy);
+            state = WALK_OUT;
+        }
+        else camera.fovy *= 0.90;   
+    }
+    else if(state == WALK_OUT)
+    {
+        if(camera.fovy >= FOV) {
+            camera.fovy = FOV;
+            state = DEFAULT;
+            player.room = LoadRoom(rooms[player.y][player.x]);
+            StopSound(footsteps);
+        }
+        else camera.fovy *= 1.85;
+    }
+
+    BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        BeginMode3D(camera);
+
+            DrawLeftWall(*leftWall->path, (Vector3){ 2.0f, 1.0f, 0.0f }, 2.0f, 2.0f, 2.0f, WHITE);
+            DrawRightWall(*rightWall->path, (Vector3){ -2.0f, 1.0f, 0.0f }, 2.0f, 2.0f, 2.0f, WHITE);
+            DrawFrontWall(*frontWall->path, (Vector3){ 0.0f, 1.0f, 2.0f }, 2.0f, 2.0f, 2.0f, WHITE);
+            DrawFloor(floorTexture, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, 1.0f, 2.0f, WHITE);
+            DrawCeiling(floorTexture, (Vector3){ 0.0f, 2.5f, 0.0f }, 2.0f, 1.0f, 2.0f, WHITE);
+            
+            DrawSphere(camera.position, 0.5f, {0, 0, 0, 100});
+            DrawSphere(camera.position, 1.0f, {0, 0, 0, 150});
+            // DrawCube(camera.position, 1, 1, 1, BLACK);
+            // Drawsh
+        EndMode3D();
+
+        if(debug) {
+            DrawFPS(10, 10);
+            DrawText(TextFormat("X %d Y %d", player.x, player.y), 10, 30, 20, BLACK);
+            DrawText(TextFormat("%s", frontWall->passable? "Passable" : "Not passable"), 10, 50, 20, BLACK);
+            DrawText(TextFormat("Facing %s", directionMap[player.facing].c_str()), 10, 70, 20, BLACK);
+
+            const char *passage[] = {
+                TextFormat("FRONT %d", rooms[player.x][player.y].paths[FRONT].path),
+                TextFormat("LEFT %d", rooms[player.x][player.y].paths[LEFT].path),  
+                TextFormat("RIGHT %d", rooms[player.x][player.y].paths[RIGHT].path),
+                TextFormat("BACK %d", rooms[player.x][player.y].paths[BACK].path),  
+            };
+
+            DrawText(passage[0], screenWidth - 10 - MeasureText(passage[0], 20), 20, 20, GREEN);
+            DrawText(passage[1], screenWidth - 10 - MeasureText(passage[1], 20), 40, 20, GREEN);
+            DrawText(passage[2], screenWidth - 10 - MeasureText(passage[2], 20), 60, 20, GREEN);
+            DrawText(passage[3], screenWidth - 10 - MeasureText(passage[3], 20), 80, 20, GREEN);
+        }
+    EndDrawing();
+    
+    if(player.y == lula.y && player.x == lula.x)
+        state = DEAD;
+    else if(player.x == player.endX && player.y == player.endY)
+        state = WIN;
+
+    updateWalls = false;
+}
+
+void WinCutscene(system_clock::time_point& timer) {
+    static int stage = 0;
+    static float overlayOpacity = 0.0f;
+    static Color bg = DARKGREEN;
+        
+    if(IsKeyPressed(KEY_SPACE)) {
+        stage++;
+        timer = system_clock::now(); // reset clock
+    }
+
+    if(overlayOpacity != 2.5) 
+        overlayOpacity += 0.05;
+
+    DrawRectangle(0, 0, screenWidth, screenHeight, { bg.r, bg.g, bg.b, (unsigned char)(int)trunc(100.0f * overlayOpacity) });
+    
+    switch(stage) {
+        case 0:
+            if(overlayOpacity >= 2.5) DrawCenteredText("Você reconectou a energia!", 40, WHITE);
+        break;
+        case 2:
+            DrawCenteredText("XANDANGO", 60, WHITE,                                         0, 60 * 2);
+        case 1:
+            bg = BLACK;
+            DrawCenteredText("Bolsonaro é sentenciado a", 35, WHITE, 0, 40 * -4);
+            DrawCenteredText("13 prisões perpétuas", 35, WHITE, 0, 40 * -2);
+            DrawCenteredText("Xandão, orgulhoso, lhe promove a ", 35, WHITE, 0, 0);
+        break;
+    }
+    
+    if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
+        DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
+}
+
+int main(void)
+{
+    InitWindow(screenWidth, screenHeight, "Masmorras do STF");
+    InitAudioDevice();
     SetTargetFPS(60);
-
-    Direction facing = FRONT;
-    bool updateWalls = true;
-
-    unsigned int cX = 0, cY = 0;
-    int endX, endY;
-
-    ShallowRoom rooms[9][9];
-
-    std::string file = FSTR;
-
-    Texture2D floorTexture = LoadTextureRot("./res/carpet.png", 0);
-    Sound footsteps = LoadSound("res/walk.wav");
-    // bool walking = false;
-
-    Room room {};
-
-    Passage<Texture2D*>* frontWall;
-    Passage<Texture2D*>* leftWall;
-    Passage<Texture2D*>* rightWall;
-    float opacity = 0.0f;
-    AppState state = INIT;
-    AppState stateCopy = INIT;
-    bool debug = false;
-
     rlDisableBackfaceCulling();
     
-    char* token = strtok((char*)file.c_str(), ";");
+    InitTextureDictionary();
+    Texture2D floorTexture = LoadTextureRot("./res/carpet.png", 0);
+    Sound footsteps        = LoadSound("res/walk.wav");
+    Camera camera          = InitCamera();
+
+    char* token = strtok((char*)map, ";");
     while(token) {
         int x, y;
+        int ret;
         ShallowRoom tmp;
+        TraceLog(LOG_DEBUG, "TK: %s\n", token);
 
-        if(sscanf(
+        if((ret = sscanf(
             token,
             "%d:%d, %d %d, %d %d, %d %d, %d %d",
                 &x, &y,
@@ -444,294 +580,73 @@ int main(void)
                 &tmp.paths[RIGHT].passable,    &tmp.paths[RIGHT].path,
                 &tmp.paths[FRONT].passable,    &tmp.paths[FRONT].path,
                 &tmp.paths[BACK].passable,     &tmp.paths[BACK].path
-            ))     
-                rooms[x][y] = ShallowRoom{tmp};
-            else if(sscanf(
-                token,
-                ">%d %d",
-                    &endX, &endY));
-        else TraceLog(LOG_FATAL, "Parsing error for file at token '%d'", token);
+            )) == 10)     
+        {
+            rooms[x][y] = tmp;
+            TraceLog(LOG_DEBUG, "RM: %d:%d, %d %d, %d %d, %d %d, %d %d\n",
+                x, y,
+                rooms[x][y].paths[LEFT].passable,     rooms[x][y].paths[LEFT].path,
+                rooms[x][y].paths[RIGHT].passable,    rooms[x][y].paths[RIGHT].path,
+                rooms[x][y].paths[FRONT].passable,    rooms[x][y].paths[FRONT].path,
+                rooms[x][y].paths[BACK].passable,     rooms[x][y].paths[BACK].path
+            );
+        }
+        else if(sscanf(
+            token,
+            ">%d %d",
+            &player.endX, &player.endY
+        ) == 2);
+        else TraceLog(LOG_FATAL, "Parsing error for file at token #(%d) '%s'", ret, token);
 
         token = strtok(NULL, ";");
     }
-    room = LoadRoom(rooms[0][0]);
 
-    Lula lula = {
-        rand() % MAP_WIDTH, rand() % MAP_HEIGHT
-    };
 
-    do {
-        lula = {
-            (unsigned int)rand() % MAP_WIDTH, (unsigned int)rand() % MAP_HEIGHT
-        };
-    } while(lula.x = 0 || lula.y == 0);
+    if(player.endX < 0 || player.endX > ARR_LEN(rooms) || player.endY < 0 || player.endY > ARR_LEN(rooms[0]))
+        TraceLog(LOG_FATAL, "No end for map.");
 
+    AppState state = INIT;
+    float overlayOpacity = 0.0f;
     auto timer = system_clock::now();
-    bool died = 0;
+    
+    player.room = LoadRoom(rooms[0][0]);
     while (!WindowShouldClose())
     {
-        if(died) {
-            if(opacity < 2.6) opacity += 0.1;
+        switch(state) {
+            case INIT:
+                BeginDrawing();
+                    IntroCutscene(state, timer);
+                EndDrawing();
+            break;
+            break;
+            case DEAD:
+                if(overlayOpacity < 2.6) overlayOpacity += 0.1;
 
-            BeginDrawing();
-                DrawRectangle(0, 0, screenWidth, screenHeight, RED);
-                
-                if(opacity == 2.5) DrawCenteredText("Você foi lulado.", 60, WHITE);
-            EndDrawing();
-            continue;
-        }
-
-        if(state == INIT) {
-            BeginDrawing();
-                // switch() {
-                    // case -5: {
-                        if(IsKeyPressed(KEY_SPACE)) state = DEFAULT;
-
-                        ClearBackground(BLACK);
-                        int fontSize = 40;
-                        char passages[][64] = {
-                            "A energia caiu",
-                            "durante o julgamento do",
-                            "Bolsonaro",
-                        };
-
-                        DrawCenteredText(passages[0], fontSize, WHITE);
-                        DrawCenteredText(passages[1], fontSize, WHITE, 0, fontSize * 2);
-                        DrawCenteredText(passages[2], fontSize, GREEN, 0, fontSize * 4);
-
-                        if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
-                            DrawText("Aperte espaço para continuar", 10, screenHeight - 20, 10, WHITE);
-                    // } break;    
-                // }
-            EndDrawing();
-            continue;
-        }
-
-        if(IsKeyPressed(KEY_LEFT))
-        {
-            TurnLeft(facing);
-            updateWalls = true;
-        }
-        else if(IsKeyPressed(KEY_RIGHT))
-        {
-            TurnRight(facing);
-            updateWalls = true;
-        }
-        else if(IsKeyPressed(KEY_UP))
-        {
-            if(!Walk(cY, cX, room, facing))
-            {
-                if(cY < 0 )                      cY++;
-                else if(cY >= ARR_LEN(rooms))    cY--;
-                else if(cX < 0 )                 cX++;
-                else if(cX >= ARR_LEN(rooms))    cX--;
-                else
-                {
-                    // if(IsSoundPlaying(footsteps)) StopSound(footsteps);
-                    // PlaySound(footsteps);
-
-                    state = WALK_IN;
-                    TraceLog(LOG_INFO, " ==> %d", rooms[cY][cX].paths[BACK].path);
-                    // updateWalls = true;
-                }
-            }
-        }
-        else if(IsKeyPressed(KEY_DOWN))
-        {
-            if(!Walk(cY, cX, room, facing, false))
-            {
-                if(cY < 0 )                      cY++;
-                else if(cY >= ARR_LEN(rooms))    cY--;
-                else if(cX < 0 )                 cX++;
-                else if(cX >= ARR_LEN(rooms))    cX--;
-                else
-                {
-                    // if(IsSoundPlaying(footsteps)) StopSound(footsteps);
-                    // PlaySound(footsteps);
-
-                    state = WALK_IN;
-                    TraceLog(LOG_INFO, " ==> %d", rooms[cY][cX].paths[BACK].path);
-                    room = LoadRoom(rooms[cY][cX]);
-                    // updateWalls = true;
-                }
-            }
-        }
-        else if(IsKeyPressed(KEY_D)) debug = !debug;
-
-        if(updateWalls) {
-            switch(facing) {
-                case BACK:
-                    frontWall = &room.paths[BACK];
-                    leftWall = &room.paths[RIGHT];
-                    rightWall = &room.paths[LEFT];
-                break;
-                case FRONT:
-                    frontWall = &room.paths[FRONT];
-                    leftWall = &room.paths[LEFT];
-                    rightWall = &room.paths[RIGHT];
-                break;
-                case LEFT:
-                    frontWall = &room.paths[LEFT];
-                    leftWall = &room.paths[BACK];
-                    rightWall = &room.paths[FRONT];
-                break;
-                case RIGHT:
-                    frontWall = &room.paths[RIGHT];
-                    leftWall = &room.paths[FRONT];
-                    rightWall = &room.paths[BACK];
-                break;
-            }
-            LulaWalk(rooms[lula.x][lula.y], lula);
-            TraceLog(LOG_INFO, "ELE %d %d", lula.x, lula.y);
-        }
-
-        if(state == 1)
-        {
-            if(camera.fovy < 50) {
-                TraceLog(LOG_INFO, "%.1f", camera.fovy);
-                state = WALK_OUT;
-            }
-            else camera.fovy *= 0.90;   
-        }
-        else if(state == 2)
-        {
-            if(camera.fovy >= FOV) {
-                camera.fovy = FOV;
-                state = DEFAULT;
-                room = LoadRoom(rooms[cY][cX]);
-            }
-            else camera.fovy *= 1.85;
-        }
-
-        BeginDrawing();
-            ClearBackground(RAYWHITE);
-
-            BeginMode3D(camera);
-
-                DrawLeftWall(*leftWall->path, (Vector3){ 2.0f, 1.0f, 0.0f }, 2.0f, 2.0f, 2.0f, WHITE);
-                DrawRightWall(*rightWall->path, (Vector3){ -2.0f, 1.0f, 0.0f }, 2.0f, 2.0f, 2.0f, WHITE);
-                DrawFrontWall(*frontWall->path, (Vector3){ 0.0f, 1.0f, 2.0f }, 2.0f, 2.0f, 2.0f, WHITE);
-                DrawFloor(floorTexture, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, 1.0f, 2.0f, WHITE);
-                DrawCeiling(floorTexture, (Vector3){ 0.0f, 2.5f, 0.0f }, 2.0f, 1.0f, 2.0f, WHITE);
-                
-                DrawSphere(camera.position, 0.5f, {0, 0, 0, 100});
-                DrawSphere(camera.position, 1.0f, {0, 0, 0, 150});
-                // DrawCube(camera.position, 1, 1, 1, BLACK);
-                // Drawsh
-            EndMode3D();
-
-            if(debug) {
-                DrawFPS(10, 10);
-                DrawText(TextFormat("X %d Y %d", cX, cY), 10, 30, 20, BLACK);
-                DrawText(TextFormat("%s", frontWall->passable? "Passable" : "Not passable"), 10, 50, 20, BLACK);
-                DrawText(TextFormat("Facing %s", map[facing].c_str()), 10, 70, 20, BLACK);
-            }
-
-            DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, (unsigned char)(opacity * 100)});
-
-        EndDrawing();
-        if(cY == lula.y && cX == lula.x) {
-            died = true;
-        }
-        updateWalls = false;
+                BeginDrawing();
+                    DrawRectangle(0, 0, screenWidth, screenHeight, RED);
+                    
+                    if(overlayOpacity == 2.5) DrawCenteredText("Você foi lulado.", 60, WHITE);
+                EndDrawing();
+            break;
+            case WIN:
+                BeginDrawing();
+                    WinCutscene(timer);
+                EndDrawing();
+            break;
+            case TURN_LEFT:
+            case TURN_RIGHT:
+            case WALK_IN:
+            case WALK_OUT:
+            case DEFAULT:
+                GameLoop(state, player, camera, timer);
+        }       
     }
 
-    for(auto texture : textureDict) UnloadTexture(texture);
-
     UnloadTexture(floorTexture);
-    UnloadSound(footsteps);
-    DrawMiniMap({}, {}, true);
+    DrawMiniMap({}, {}, true); // cleanup minimap
+    GameLoop(state, player, camera, timer, true); // cleanup loop
+    for(auto texture : textureDict) UnloadTexture(texture); // cleanup textures
 
     CloseWindow();
     return 0;
-}
-
-void DrawLeftWall(Texture2D texture, Vector3 position, float width, float height, float length, Color color) {
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-
-    rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // Left Face
-            rlNormal3f( - 1.0f, 0.0f, 0.0f);    // Normal Pointing Left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);  // Bottom Left Of The Texture and Quad
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);  // Top Right Of The Texture and Quad
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);  // Top Left Of The Texture and Quad
-        rlEnd();
-    rlSetTexture(0);
-}
-
-void DrawRightWall(Texture2D texture, Vector3 position, float width, float height, float length, Color color) {
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-
-    rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // Right face
-            rlNormal3f(1.0f, 0.0f, 0.0f);       // Normal Pointing Right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);  // Bottom Right Of The Texture and Quad
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);  // Top Right Of The Texture and Quad
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);  // Top Left Of The Texture and Quad
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-        rlEnd();
-    rlSetTexture(0);
-}
-
-void DrawFrontWall(Texture2D texture, Vector3 position, float width, float height, float length, Color color) {
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-
-    rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // Back face
-            rlNormal3f(0.0f, 0.0f, - 1.0f);     // Normal Pointing Away From Viewer
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);  // Bottom Right Of The Texture and Quad
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);  // Top Right Of The Texture and Quad
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);  // Top Left Of The Texture and Quad
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);  // Bottom Left Of The Texture and Quad
-        rlEnd();
-    rlSetTexture(0);
-}
-
-void DrawFloor(Texture2D texture, Vector3 position, float width, float height, float length, Color color) {
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-
-    rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // Top Face
-            rlNormal3f(0.0f, 1.0f, 0.0f);       // Normal Pointing Up
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);  // Top Left Of The Texture and Quad
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);  // Top Right Of The Texture and Quad
-        rlEnd();
-    rlSetTexture(0);
-}
-
-void DrawCeiling(Texture2D texture, Vector3 position, float width, float height, float length, Color color) {
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-
-    rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // Bottom Face
-            rlNormal3f(0.0f, - 1.0f, 0.0f);     // Normal Pointing Down
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);  // Top Right Of The Texture and Quad
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);  // Top Left Of The Texture and Quad
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-        rlEnd();
-    rlSetTexture(0);
 }
