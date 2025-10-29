@@ -345,11 +345,12 @@ void IntroCutscene(AppState& state, system_clock::time_point& timer) {
 }
 
 void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_clock::time_point& timer, bool cleanup = false) {
+
     static bool updateWalls = true;
     static bool debug = false;
 
-    static Sound footsteps = LoadSound("./res/walk.wav");
-    static Texture2D floorTexture = LoadTexture("./res/carpet.png");
+    static Sound footsteps = LoadSound("res/walk.wav");
+    static Texture2D& floorTexture = textureDict[2];
     
     static Passage<Texture2D*>* leftWall;
     static Passage<Texture2D*>* frontWall;
@@ -357,6 +358,10 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_cloc
 
     static Lula lula = InitLula();
 
+    if(cleanup) {
+        UnloadSound(footsteps);
+        return;
+    }
 
     // if(state == TURN_LEFT && duration_cast<milliseconds>(system_clock::now() - timer) >= TURNTIME) {
     if(state == TURN_LEFT) {
@@ -399,11 +404,11 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_cloc
             else
             {
                 if(IsSoundPlaying(footsteps)) StopSound(footsteps);
-                PlaySound(footsteps);
 
                 state = WALK_IN;
                 TraceLog(LOG_INFO, " ==> %d", rooms[player.y][player.x].paths[BACK].path);
                 updateWalls = true;
+                PlaySound(footsteps);
             }
         }
     }
@@ -417,13 +422,13 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_cloc
             else if(player.x >= MAP_WIDTH)    player.x = MAP_WIDTH - 1;
             else
             {
-                // if(IsSoundPlaying(footsteps)) StopSound(footsteps);
-                // PlaySound(footsteps);
+                if(IsSoundPlaying(footsteps)) StopSound(footsteps);
 
                 state = WALK_IN;
                 TraceLog(LOG_INFO, " ==> %d", rooms[player.y][player.x].paths[BACK].path);
                 player.room = LoadRoom(rooms[player.y][player.x]);
                 updateWalls = true;
+                PlaySound(footsteps);
             }
         }
     }
@@ -470,7 +475,6 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_cloc
             camera.fovy = FOV;
             state = DEFAULT;
             player.room = LoadRoom(rooms[player.y][player.x]);
-            StopSound(footsteps);
         }
         else camera.fovy *= 1.85;
     }
@@ -561,8 +565,6 @@ int main(void)
     rlDisableBackfaceCulling();
     
     InitTextureDictionary();
-    Texture2D floorTexture = LoadTextureRot("./res/carpet.png", 0);
-    Sound footsteps        = LoadSound("res/walk.wav");
     Camera camera          = InitCamera();
 
     char* token = strtok((char*)map, ";");
@@ -639,10 +641,9 @@ int main(void)
             case WALK_OUT:
             case DEFAULT:
                 GameLoop(state, player, camera, timer);
+            break;
         }       
     }
-
-    UnloadTexture(floorTexture);
     DrawMiniMap({}, {}, true); // cleanup minimap
     GameLoop(state, player, camera, timer, true); // cleanup loop
     for(auto texture : textureDict) UnloadTexture(texture); // cleanup textures

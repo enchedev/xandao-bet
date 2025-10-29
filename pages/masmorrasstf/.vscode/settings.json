@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "*.iset": "powershell",
-        "*.hlisl": "swift",
-        "*.ser": "yaml",
-        "*.lox": "python",
-        "cstring": "cpp"
-    }
-}
