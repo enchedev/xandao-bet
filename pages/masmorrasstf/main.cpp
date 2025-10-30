@@ -11,6 +11,8 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
+typedef system_clock::time_point timer_t;
+
 #define FOV 120.0f
 #define TIMEOUT 1s
 #define MAP_WIDTH 8
@@ -43,6 +45,7 @@ enum AppState {
     WIN,
     TURN_LEFT,
     TURN_RIGHT,
+    MENU,
 };
 
 struct Lula {
@@ -299,7 +302,7 @@ void InitTextureDictionary() {
     textureDict[2] = LoadTextureRot("./res/carpet.png", 180);
 }
 
-void IntroCutscene(AppState& state, system_clock::time_point& timer) {
+void IntroCutscene(AppState& state, timer_t& timer) {
     static int stage = 0;
     
     if(IsKeyPressed(KEY_SPACE)) {
@@ -344,12 +347,13 @@ void IntroCutscene(AppState& state, system_clock::time_point& timer) {
         DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
 }
 
-void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_clock::time_point& timer, bool cleanup = false) {
+void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& timer, bool cleanup = false) {
 
     static bool updateWalls = true;
     static bool debug = false;
 
     static Sound footsteps = LoadSound("res/walk.wav");
+    static Sound ambiance = LoadSound("./res/ambiance.wav");
     static Texture2D& floorTexture = textureDict[2];
     
     static Passage<Texture2D*>* leftWall;
@@ -360,7 +364,13 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_cloc
 
     if(cleanup) {
         UnloadSound(footsteps);
+        UnloadSound(ambiance);
         return;
+    }
+
+    if(!IsSoundPlaying(ambiance)) { 
+        SetSoundVolume(ambiance, 0.5f);
+        PlaySound(ambiance);
     }
 
     // if(state == TURN_LEFT && duration_cast<milliseconds>(system_clock::now() - timer) >= TURNTIME) {
@@ -524,7 +534,7 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, system_cloc
     updateWalls = false;
 }
 
-void WinCutscene(system_clock::time_point& timer) {
+void WinCutscene(timer_t& timer) {
     static int stage = 0;
     static float overlayOpacity = 0.0f;
     static Color bg = DARKGREEN;
@@ -555,6 +565,41 @@ void WinCutscene(system_clock::time_point& timer) {
     
     if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
         DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
+}
+
+bool DrawButton(Rectangle dim, const char* text, Color bg, Color highlight, Color textColor = WHITE) {
+    Color background = bg;
+    bool ret = false;
+
+    if(CheckCollisionPointRec(GetMousePosition(), dim)) {
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            ret = true;
+        }        
+        background = highlight;
+    }
+
+    DrawRectangle(dim.x, dim.y, dim.width, dim.height, background);
+    // DrawCenteredText(text, 20, textColor, -dim.x, dim.y);
+
+    DrawText(text, dim.x + MeasureText(text, 20) / 2, dim.y + 20 / 2, 20, textColor);
+    
+    return ret;
+}
+
+void Menu(AppState& state, timer_t timer) {
+    static Texture2D background = LoadTexture("./res/menu.png");
+
+    BeginDrawing();
+        DrawTexture(background, 0, 0, WHITE);
+
+        if(DrawButton(
+            { 20, screenHeight - 60, 120, 40},
+            "PLAY",
+            { 32, 32, 32, 255 },
+            { 128, 0, 0, 255 }
+        )) state = INIT;
+    EndDrawing();
 }
 
 int main(void)
@@ -607,7 +652,7 @@ int main(void)
     if(player.endX < 0 || player.endX > ARR_LEN(rooms) || player.endY < 0 || player.endY > ARR_LEN(rooms[0]))
         TraceLog(LOG_FATAL, "No end for map.");
 
-    AppState state = INIT;
+    AppState state = MENU;
     float overlayOpacity = 0.0f;
     auto timer = system_clock::now();
     
@@ -615,6 +660,9 @@ int main(void)
     while (!WindowShouldClose())
     {
         switch(state) {
+            case MENU:
+                Menu(state, timer);
+            break;
             case INIT:
                 BeginDrawing();
                     IntroCutscene(state, timer);
