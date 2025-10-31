@@ -9,17 +9,12 @@
 #include "./map.h"
 
 using namespace std::chrono;
-using namespace std::chrono_literals;
-
-typedef system_clock::time_point timer_t;
 
 #define FOV 120.0f
-#define TIMEOUT 1s
+#define TIMEOUT std::chrono::seconds(1)
 #define MAP_WIDTH 8
 #define MAP_HEIGHT 9
 #define TURNTIME 600ms
-#define FSTR \ 
-
 #define ARR_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
 std::string directionMap[] = {
@@ -57,13 +52,16 @@ struct Lula {
     Sound soundboard[16];
     int sbSz = 0;
 
-    Sound scare;
     bool warning = false;
     Texture2D texture;
 
-    enum {
-        LULA
-    } kind;
+    Lula(int x, int y) {
+        this->x = x;
+        this->y = y;
+    }
+    
+    Lula() {}
+
 } lula;
 
 template <typename T = int>
@@ -99,7 +97,7 @@ struct PlayerInfo {
     Room room;
 } player;
 
-timer_t timer;
+time_point<std::chrono::system_clock> timer;
 Camera3D camera;
 Sound heartbeat;
 bool updateWalls = true;
@@ -295,31 +293,23 @@ int LulaDistance(Lula lula) {
     return abs(lula.x - player.x) + abs(player.y - lula.y);
 }
 
-inline int clamp(int a, int b, int c) {
-    return __max(__min(a, b), c);
-}
-
 void LulaWalk(ShallowRoom room, Lula& lula) {
     if(GetRandomValue(0, 1) == 1) {
         int random = GetRandomValue(0, lula.sbSz);
-        int distance = __min(LulaDistance(lula), 1);
+        int distance = LulaDistance(lula) < 1 ? 1 : LulaDistance(lula);
 
-        for(auto& sound : lula.soundboard)
-            if(IsSoundPlaying(sound))
-                StopSound(sound);
-
-        TraceLog(LOG_INFO, "Played %d %f", random, 1.0f / distance / 10);
-
-        SetSoundVolume(lula.soundboard[random], 1.0f / distance / 10);// / pow(LulaDistance(lula), 2));
+        TraceLog(LOG_INFO, "Played %d %d %f", random, distance, 1.0f / pow(distance, 2));
+        SetSoundVolume(lula.soundboard[random], 1.0f / pow(distance, 2));// / pow(LulaDistance(lula), 2));
+        StopSound(lula.soundboard[random]);
         PlaySound(lula.soundboard[random]);
     }
 
-    if(LulaDistance(lula) < 3) {
+    if(LulaDistance(lula) < 5) {
         if(!player.heldBreath) {
             if(player.x < lula.x) lula.x--;
             else if(player.y < lula.y) lula.y--;
-            else if(player.x > lula.x < 0) lula.x++;
-            else if(player.y > lula.y < 0) lula.y++;
+            else if(player.x > lula.x) lula.x++;
+            else if(player.y > lula.y) lula.y++;
             lula.warning = true;
         }
     }
@@ -353,8 +343,9 @@ void LulaWalk(ShallowRoom room, Lula& lula) {
 Lula InitLula() {
     Lula lulinho;
     do {
-        lulinho = {
-            rand() % MAP_WIDTH, rand() % MAP_HEIGHT
+        lulinho = Lula{
+            rand() % MAP_WIDTH,
+            rand() % MAP_HEIGHT
         };
     } while(lulinho.x == 0 || lulinho.y == 0);
 
@@ -467,7 +458,7 @@ void GameLoop(bool cleanup = false)
         PlaySound(ambiance);
     }
 
-    if(player.heldBreath && timeout(500ms)) {
+    if(player.heldBreath && timeout(std::chrono::milliseconds{})) {
         timer = system_clock::now();
         LulaWalk(rooms[lula.x][lula.y], lula);
      
@@ -622,6 +613,7 @@ void GameLoop(bool cleanup = false)
             
             DrawSphere(camera.position, 0.5f, {0, 0, 0, 100});
             // DrawSphere(camera.position, 1.0f, {0, 0, 0, 150});
+            DrawCubeTexture(lula.texture, (Vector3){ 0.0f, 0.0f, 0.0f }, 0.5f, 0.5f, 0.5f, WHITE);
         EndMode3D();
 
         DrawMiniMap(player.room, player.facing);
@@ -649,7 +641,6 @@ void GameLoop(bool cleanup = false)
             DrawText(passage[3], screenWidth - 10 - MeasureText(passage[3], 20), 80, 20, GREEN);
         }
 
-        DrawCubeTexture(lula.texture, (Vector3){ 0.0f, 0.0f, 0.0f }, 0.5f, 0.5f, 0.5f, WHITE);
         
         if(player.x == player.endX && player.y == player.endY)
         {
@@ -750,7 +741,7 @@ void Menu() {
 
         DrawRectangle(0, 0, screenWidth, screenHeight, {0, 0, 0, 100});
         DrawCenteredText("STF", 120, {200, 0, 0, 255});
-        DrawCenteredText("Masmorras", 80, WHITE);
+        DrawCenteredText("Masmorras", 100, WHITE);
 
         if(DrawButton(
             { 20, screenHeight - 60, (float)MeasureText("PLAY", 20) * 2, 40},
@@ -758,6 +749,18 @@ void Menu() {
             { 32, 32, 32, 255 },
             { 128, 0, 0, 255 }
         )) state = INIT;
+
+        static char* passages[] = {
+            "BETA",
+            "Esse jogo está CHEIO de bugs",
+            "para continuar jogando",
+            "aperte D (debug) e R (reiniciar jogo)",
+        };
+
+        DrawText(passages[0], screenWidth - MeasureText(passages[3], 20), 10, 20, {255, 0, 0, 255});
+        DrawText(passages[1], screenWidth - MeasureText(passages[3], 20), 30, 20, {255, 0, 0, 255});
+        DrawText(passages[2], screenWidth - MeasureText(passages[3], 20), 50, 20, {255, 0, 0, 255});
+        DrawText(passages[3], screenWidth - MeasureText(passages[3], 20), 70, 20, {255, 0, 0, 255});
     EndDrawing();
 }
 
@@ -771,7 +774,6 @@ void GameOver() {
     
     switch(stage) {
         case 0:
-            
             if(once) {
                 TraceLog(LOG_INFO, "Game over %d", opacity);
                 PlaySound(zeGota);
@@ -782,18 +784,15 @@ void GameOver() {
                 once = false;
                 timer = system_clock::now();
             }
-            stage++;
-        break;
-        case 1:
             // TraceLog(LOG_INFO, "Game over %d", opacity);
-
             DrawTexture(lulaTxt, 0, 0, WHITE);
             
-            if(!IsSoundPlaying(zeGota)) UnloadSound(zeGota);
-            
-            if(timeout(1.5s)) stage++;
+            if(!IsSoundPlaying(zeGota)) {
+                stage++;
+                UnloadSound(zeGota);
+            }
         break;
-        case 2:
+        case 1:
             if(opacity < 256) opacity += 1;
             else state = CREDITS;
 
@@ -812,7 +811,6 @@ int main(void)
     InitTextureDictionary();
 
     // lula.sound = LoadSound("./res/audio/hino.wav");
-    lula.scare = LoadSound("./res/audio/zegotinha.wav");
     lula.texture = LoadTexture("./res/lula.png");
 
     lula.soundboard[lula.sbSz++] = LoadSound("./res/audio/banana.wav");
@@ -920,7 +918,6 @@ int main(void)
     GameLoop(true); 
     for(auto texture : textureDict) UnloadTexture(texture); 
     // UnloadSound(lula.sound);
-    UnloadSound(lula.scare);
     UnloadTexture(lula.texture);
     for(auto sound : lula.soundboard) UnloadSound(sound);
 
