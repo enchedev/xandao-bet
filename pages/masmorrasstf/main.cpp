@@ -29,6 +29,7 @@ std::string directionMap[] = {
     "FRONT",
 };
 
+
 enum Direction {
     LEFT  = 0,
     RIGHT = 1,
@@ -46,12 +47,24 @@ enum AppState {
     TURN_LEFT,
     TURN_RIGHT,
     MENU,
-};
+    CREDITS
+} state;
 
 struct Lula {
-    unsigned int x;
-    unsigned int y;
-};
+    int x;
+    int y;
+
+    Sound soundboard[16];
+    int sbSz = 0;
+
+    Sound scare;
+    bool warning = false;
+    Texture2D texture;
+
+    enum {
+        LULA
+    } kind;
+} lula;
 
 template <typename T = int>
 struct Passage {
@@ -78,17 +91,22 @@ struct Room {
 
 struct PlayerInfo {
     Direction facing = FRONT;
-    unsigned int x = 0;
-    unsigned int y = 0;
-    unsigned int endX = 0;
-    unsigned int endY = 0;
+    int x = 0;
+    int y = 0;
+    int endX = 0;
+    int endY = 0;
+    bool heldBreath = false;
     Room room;
 } player;
 
+timer_t timer;
+Camera3D camera;
+Sound heartbeat;
+bool updateWalls = true;
 ShallowRoom rooms[9][9];
-Texture2D textureDict[32] = {};
 const int screenWidth = 800;
 const int screenHeight = 450;
+Texture2D textureDict[32] = {};
 
 inline float Lerp(float start, float end, float amount) { return  start + amount*(end - start); }
 
@@ -107,11 +125,14 @@ void DrawCenteredText(const char* text, int fontSize, Color color, int xOffset =
 
 void DrawMiniMap(Room room, Direction facing, bool destroy = false) {
     static Texture2D tmp[4] = {
-        LoadTextureRot("res/player.png", 90),
         LoadTextureRot("res/player.png", -90),
-        LoadTextureRot("res/player.png", 180),
+        LoadTextureRot("res/player.png", 90),
         LoadTextureRot("res/player.png", 0),
+        LoadTextureRot("res/player.png", 180),
     };
+    static int mWidth = 60;
+    static int mHeight = 60;
+    static int mPadding = 20;
 
     if(destroy) {
         for(auto icon : tmp) {
@@ -120,11 +141,45 @@ void DrawMiniMap(Room room, Direction facing, bool destroy = false) {
         return;
     }
 
-    DrawRectangle(20, 20, 30, 30, BLACK);
-    DrawRectangleLinesEx({20, 20, 30, 30}, 2.0f, GRAY);
+    DrawRectangle(screenWidth - mWidth - mPadding, 20, mWidth, mHeight, BLACK);
+    DrawRectangleLinesEx({screenWidth - 80, 20, 60, 60}, 2.0f, GRAY);
+
+    if(room.paths[RIGHT].passable)
+        DrawRectangle(
+            screenWidth - mPadding - 5,
+            30,
+            10,
+            40,
+            WHITE
+        );
+    if(room.paths[LEFT].passable)
+        DrawRectangle(
+            screenWidth - mWidth - mPadding - 5,
+            30,
+            10,
+            40,
+            WHITE
+        );
+    if(room.paths[BACK].passable)
+        DrawRectangle(
+            screenWidth - mWidth - mPadding + 10,
+            mPadding + mHeight - 5,
+            40,
+            10,
+            WHITE
+        );
+    if(room.paths[FRONT].passable)
+        DrawRectangle(
+            screenWidth - mWidth - mPadding + 10,
+            mPadding - 5,
+            40,
+            10,
+            WHITE
+        );
+
     DrawTexture(
         tmp[facing],
-        (20 + 15) - tmp[facing].width / 2, (20 + 15) - tmp[facing].height / 2, WHITE);    
+        (screenWidth - 80 + 30) - tmp[facing].width / 2, (20 + 30) - tmp[facing].height / 2, WHITE);    
 }
 
 Room LoadRoom(ShallowRoom unloaded) {
@@ -148,7 +203,7 @@ Room LoadRoom(ShallowRoom unloaded) {
     };
 }
 
-void TurnRight(Direction& facing, AppState& state, Camera3D& camera) {
+void TurnRight(Direction& facing) {
     switch(facing) {
         case LEFT:
             facing = FRONT;
@@ -166,7 +221,7 @@ void TurnRight(Direction& facing, AppState& state, Camera3D& camera) {
     state = TURN_RIGHT;
 }
 
-void TurnLeft(Direction& facing, AppState& state, Camera3D& camera) {
+void TurnLeft(Direction& facing) {
     switch(facing) {
         case LEFT:
             facing = BACK;
@@ -185,7 +240,7 @@ void TurnLeft(Direction& facing, AppState& state, Camera3D& camera) {
 }
 
 template<typename T = Room>
-bool Walk(unsigned int& y, unsigned int& x, T room, Direction facing, bool forward = true) {
+bool Walk(int& y, int& x, T room, Direction facing, bool forward = true) {
     switch(facing) {
         case LEFT: {
             if(!room.paths[LEFT].passable && forward)
@@ -236,51 +291,73 @@ bool Walk(unsigned int& y, unsigned int& x, T room, Direction facing, bool forwa
     return false;
 }
 
+int LulaDistance(Lula lula) {
+    return abs(lula.x - player.x) + abs(player.y - lula.y);
+}
+
+inline int clamp(int a, int b, int c) {
+    return __max(__min(a, b), c);
+}
+
 void LulaWalk(ShallowRoom room, Lula& lula) {
+    if(GetRandomValue(0, 1) == 1) {
+        int random = GetRandomValue(0, lula.sbSz);
+        int distance = __min(LulaDistance(lula), 1);
+
+        for(auto& sound : lula.soundboard)
+            if(IsSoundPlaying(sound))
+                StopSound(sound);
+
+        TraceLog(LOG_INFO, "Played %d %f", random, 1.0f / distance / 10);
+
+        SetSoundVolume(lula.soundboard[random], 1.0f / distance / 10);// / pow(LulaDistance(lula), 2));
+        PlaySound(lula.soundboard[random]);
+    }
+
+    if(LulaDistance(lula) < 3) {
+        if(!player.heldBreath) {
+            if(player.x < lula.x) lula.x--;
+            else if(player.y < lula.y) lula.y--;
+            else if(player.x > lula.x < 0) lula.x++;
+            else if(player.y > lula.y < 0) lula.y++;
+            lula.warning = true;
+        }
+    }
+
+    int top = 0;
     Direction lulaBuffer[4];
-    if(rand() % 3 == 1) {
+    for(int i = 0; i < 4; ++i) 
+        if(room.paths[i].passable)
+            lulaBuffer[top++] = (Direction)i;
+
+    if(top == 0) {
         lula = {
-                (unsigned int)(rand() % MAP_WIDTH),
-                (unsigned int)(rand() % MAP_HEIGHT),
-            };
-            return;
+            rand() % MAP_WIDTH,
+            rand() % MAP_HEIGHT,
+        };
+        return;
     }
-    else {
-        int top = 0;
-        for(int i = 0; i < 4; ++i) {
-            if(room.paths[i].passable) {
-                lulaBuffer[top++] = (Direction)i;
-            }
-        }
 
-        if(top == 0) {
-            lula = {
-                (unsigned int)(rand() % MAP_WIDTH),
-                (unsigned int)(rand() % MAP_HEIGHT),
-            };
-            return;
-        }
-
-        if(Walk<ShallowRoom>(lula.x, lula.y, room, lulaBuffer[rand() % 4])) {
-            lula = {
-                (unsigned int)(rand() % MAP_WIDTH),
-                (unsigned int)(rand() % MAP_HEIGHT),
-            };
-        }
-        if(lula.y < 0 )                 lula.y = 0;
-        else if(lula.y >= MAP_HEIGHT)   lula.y = MAP_HEIGHT;
-        else if(lula.x < 0 )            lula.x = 0;
-        else if(lula.x >= MAP_WIDTH)    lula.x = MAP_WIDTH;
+    if(Walk<ShallowRoom>(lula.x, lula.y, room, lulaBuffer[rand() % 4])) {
+        lula = {
+            rand() % MAP_WIDTH,
+            rand() % MAP_HEIGHT,
+        };
     }
+    if(lula.y < 0 )                 lula.y = 0;
+    else if(lula.y >= MAP_HEIGHT)   lula.y = MAP_HEIGHT;
+    else if(lula.x < 0 )            lula.x = 0;
+    else if(lula.x >= MAP_WIDTH)    lula.x = MAP_WIDTH;
 }
 
 Lula InitLula() {
     Lula lulinho;
     do {
         lulinho = {
-            (unsigned int)rand() % MAP_WIDTH, (unsigned int)rand() % MAP_HEIGHT
+            rand() % MAP_WIDTH, rand() % MAP_HEIGHT
         };
-    } while(lulinho.x = 0 || lulinho.y == 0);
+    } while(lulinho.x == 0 || lulinho.y == 0);
+
 
     return lulinho;
 }
@@ -302,8 +379,9 @@ void InitTextureDictionary() {
     textureDict[2] = LoadTextureRot("./res/carpet.png", 180);
 }
 
-void IntroCutscene(AppState& state, timer_t& timer) {
+void IntroCutscene() {
     static int stage = 0;
+    static Texture2D tex = LoadTexture("./res/controls.png");
     
     if(IsKeyPressed(KEY_SPACE)) {
         stage++;
@@ -340,40 +418,78 @@ void IntroCutscene(AppState& state, timer_t& timer) {
             DrawCenteredText(passages[3], fontSize, WHITE, 0, fontSize *  2);
             DrawCenteredText(passages[4], fontSize, WHITE, 0, fontSize *  4);
         } break;
-        case 2: state = DEFAULT; break;
+        case 2:
+            DrawTexture(tex, 0, 0, WHITE);
+            break;
+        case 3: 
+            state = DEFAULT;
+            UnloadTexture(tex);
+        break; 
     }
 
     if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
-        DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
+        DrawText("Aperte espaço para continuar", 20, screenHeight - 25, 15, WHITE);
 }
 
-void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& timer, bool cleanup = false) {
+template <typename Timer>
+bool timeout(Timer whatever) {
+    return duration_cast<Timer>(system_clock::now() - timer) >= whatever;
+}
 
-    static bool updateWalls = true;
+void GameLoop(bool cleanup = false)
+{
     static bool debug = false;
 
-    static Sound footsteps = LoadSound("res/walk.wav");
-    static Sound ambiance = LoadSound("./res/ambiance.wav");
+    static Sound footsteps = LoadSound("res/audio/walk.wav");
+    static Sound ambiance = LoadSound("./res/audio/ambiance.wav");
     static Texture2D& floorTexture = textureDict[2];
     
     static Passage<Texture2D*>* leftWall;
     static Passage<Texture2D*>* frontWall;
     static Passage<Texture2D*>* rightWall;
+    
 
-    static Lula lula = InitLula();
 
     if(cleanup) {
         UnloadSound(footsteps);
         UnloadSound(ambiance);
         return;
     }
+    
+    if(player.y == lula.y && player.x == lula.x && !player.heldBreath)
+    {
+        state = DEAD;
+        return;
+    }
 
     if(!IsSoundPlaying(ambiance)) { 
-        SetSoundVolume(ambiance, 0.5f);
+        SetSoundVolume(ambiance, 0.2f);
         PlaySound(ambiance);
     }
 
-    // if(state == TURN_LEFT && duration_cast<milliseconds>(system_clock::now() - timer) >= TURNTIME) {
+    if(player.heldBreath && timeout(500ms)) {
+        timer = system_clock::now();
+        LulaWalk(rooms[lula.x][lula.y], lula);
+     
+        if(!IsSoundPlaying(heartbeat))
+            PlaySound(heartbeat);
+    }
+
+    if(IsKeyPressed(KEY_SPACE)) {
+        if(lula.warning) lula.warning = false;
+
+        if(player.x == player.endX && player.y == player.endY) {
+            state = WIN;
+            return;
+        }
+
+        player.heldBreath = !player.heldBreath;
+        
+        if(!player.heldBreath) StopSound(heartbeat);
+        timer = system_clock::now();
+    }
+
+    
     if(state == TURN_LEFT) {
         if(camera.target.x < 1.75f) camera.target.x += 0.25f;
         else
@@ -392,18 +508,15 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& ti
             state = DEFAULT;
         }
     }
-
     else if(IsKeyPressed(KEY_LEFT))
     {
-        TurnLeft(player.facing, state, camera);
-        // updateWalls = true;
+        TurnLeft(player.facing);
     }
     else if(IsKeyPressed(KEY_RIGHT))
     {
-        TurnRight(player.facing, state, camera);
-        // updateWalls = true;
+        TurnRight(player.facing);
     }
-    else if(IsKeyPressed(KEY_UP))
+    else if(IsKeyPressed(KEY_UP) && !player.heldBreath)
     {
         if(!Walk(player.y, player.x, player.room, player.facing))
         {
@@ -422,7 +535,7 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& ti
             }
         }
     }
-    else if(IsKeyPressed(KEY_DOWN))
+    else if(IsKeyPressed(KEY_DOWN) && !player.heldBreath)
     {
         if(!Walk(player.y, player.x, player.room, player.facing, false))
         {
@@ -443,6 +556,10 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& ti
         }
     }
     else if(IsKeyPressed(KEY_D)) debug = !debug;
+    else if(IsKeyPressed(KEY_R) && debug) {
+        state = DEAD;
+        return;
+    }
 
     if(updateWalls) {
         switch(player.facing) {
@@ -496,21 +613,28 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& ti
 
             DrawLeftWall(*leftWall->path, (Vector3){ 2.0f, 1.0f, 0.0f }, 2.0f, 2.0f, 2.0f, WHITE);
             DrawRightWall(*rightWall->path, (Vector3){ -2.0f, 1.0f, 0.0f }, 2.0f, 2.0f, 2.0f, WHITE);
-            DrawFrontWall(*frontWall->path, (Vector3){ 0.0f, 1.0f, 2.0f }, 2.0f, 2.0f, 2.0f, WHITE);
+            if(lula.x == player.x && lula.y == player.y)
+                DrawFrontWall(lula.texture, (Vector3){ 0.0f, 1.0f, 2.0f }, 2.0f, 2.0f, 2.0f, WHITE);
+            else
+                DrawFrontWall(*frontWall->path, (Vector3){ 0.0f, 1.0f, 2.0f }, 2.0f, 2.0f, 2.0f, WHITE);
             DrawFloor(floorTexture, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, 1.0f, 2.0f, WHITE);
             DrawCeiling(floorTexture, (Vector3){ 0.0f, 2.5f, 0.0f }, 2.0f, 1.0f, 2.0f, WHITE);
             
             DrawSphere(camera.position, 0.5f, {0, 0, 0, 100});
-            DrawSphere(camera.position, 1.0f, {0, 0, 0, 150});
-            // DrawCube(camera.position, 1, 1, 1, BLACK);
-            // Drawsh
+            // DrawSphere(camera.position, 1.0f, {0, 0, 0, 150});
         EndMode3D();
+
+        DrawMiniMap(player.room, player.facing);
+
+        if(lula.warning) DrawCenteredText("Aperte ESPAÇO para segurar sua respiração", 30, RAYWHITE, 0, screenHeight - 35);
 
         if(debug) {
             DrawFPS(10, 10);
             DrawText(TextFormat("X %d Y %d", player.x, player.y), 10, 30, 20, BLACK);
             DrawText(TextFormat("%s", frontWall->passable? "Passable" : "Not passable"), 10, 50, 20, BLACK);
             DrawText(TextFormat("Facing %s", directionMap[player.facing].c_str()), 10, 70, 20, BLACK);
+            DrawText(TextFormat("Lula %d %d", lula.x, lula.y), 10, 90, 20, BLACK);
+            DrawText(TextFormat("End %d %d", player.endX, player.endY), 10, 110, 20, BLACK);
 
             const char *passage[] = {
                 TextFormat("FRONT %d", rooms[player.x][player.y].paths[FRONT].path),
@@ -524,24 +648,52 @@ void GameLoop(AppState& state, PlayerInfo& player, Camera3D& camera, timer_t& ti
             DrawText(passage[2], screenWidth - 10 - MeasureText(passage[2], 20), 60, 20, GREEN);
             DrawText(passage[3], screenWidth - 10 - MeasureText(passage[3], 20), 80, 20, GREEN);
         }
+
+        DrawCubeTexture(lula.texture, (Vector3){ 0.0f, 0.0f, 0.0f }, 0.5f, 0.5f, 0.5f, WHITE);
+        
+        if(player.x == player.endX && player.y == player.endY)
+        {
+            DrawCenteredText("Aperte espaço para", 30, WHITE, 0, screenHeight - 70);   
+            DrawCenteredText("religar o dijuntor", 20, WHITE, 0, screenHeight - 25);   
+        }
     EndDrawing();
     
-    if(player.y == lula.y && player.x == lula.x)
-        state = DEAD;
-    else if(player.x == player.endX && player.y == player.endY)
-        state = WIN;
 
     updateWalls = false;
 }
 
-void WinCutscene(timer_t& timer) {
+void InitGame() {
+    camera = InitCamera();
+    lula = InitLula();
+    state = MENU;
+
+    player.facing = FRONT;
+    player.x = 0;
+    player.y = 0;
+    
+reGenXY:
+    player.endX = GetRandomValue(0, MAP_WIDTH);
+    player.endY = GetRandomValue(0, MAP_HEIGHT);
+
+    for(auto adj : rooms[player.endX][player.endY].paths)
+        if(adj.passable) goto next;
+
+    goto reGenXY;
+next:
+
+    player.heldBreath = false;
+    player.room = LoadRoom(rooms[0][0]);
+    updateWalls = true;
+}
+
+void WinCutscene() {
     static int stage = 0;
     static float overlayOpacity = 0.0f;
     static Color bg = DARKGREEN;
         
     if(IsKeyPressed(KEY_SPACE)) {
         stage++;
-        timer = system_clock::now(); // reset clock
+        timer = system_clock::now(); 
     }
 
     if(overlayOpacity != 2.5) 
@@ -554,12 +706,15 @@ void WinCutscene(timer_t& timer) {
             if(overlayOpacity >= 2.5) DrawCenteredText("Você reconectou a energia!", 40, WHITE);
         break;
         case 2:
-            DrawCenteredText("XANDANGO", 60, WHITE,                                         0, 60 * 2);
+            DrawCenteredText("XANDANGO", 60, BLUE,                                         0, 60 * 2);
         case 1:
             bg = BLACK;
             DrawCenteredText("Bolsonaro é sentenciado a", 35, WHITE, 0, 40 * -4);
             DrawCenteredText("13 prisões perpétuas", 35, WHITE, 0, 40 * -2);
             DrawCenteredText("Xandão, orgulhoso, lhe promove a ", 35, WHITE, 0, 0);
+        break;
+        case 3: 
+            state = CREDITS;
         break;
     }
     
@@ -580,26 +735,71 @@ bool DrawButton(Rectangle dim, const char* text, Color bg, Color highlight, Colo
     }
 
     DrawRectangle(dim.x, dim.y, dim.width, dim.height, background);
-    // DrawCenteredText(text, 20, textColor, -dim.x, dim.y);
+    
 
     DrawText(text, dim.x + MeasureText(text, 20) / 2, dim.y + 20 / 2, 20, textColor);
     
     return ret;
 }
 
-void Menu(AppState& state, timer_t timer) {
+void Menu() {
     static Texture2D background = LoadTexture("./res/menu.png");
 
     BeginDrawing();
         DrawTexture(background, 0, 0, WHITE);
 
+        DrawRectangle(0, 0, screenWidth, screenHeight, {0, 0, 0, 100});
+        DrawCenteredText("STF", 120, {200, 0, 0, 255});
+        DrawCenteredText("Masmorras", 80, WHITE);
+
         if(DrawButton(
-            { 20, screenHeight - 60, 120, 40},
+            { 20, screenHeight - 60, (float)MeasureText("PLAY", 20) * 2, 40},
             "PLAY",
             { 32, 32, 32, 255 },
             { 128, 0, 0, 255 }
         )) state = INIT;
     EndDrawing();
+}
+
+void GameOver() {
+    static int stage = 0;
+    static int opacity = 0;
+    static bool once = true;
+    static Sound zeGota = LoadSound("./res/audio/zegotinha.wav");
+    static Image lulaImg = LoadImage("./res/lula.png");
+    static Texture lulaTxt;
+    
+    switch(stage) {
+        case 0:
+            
+            if(once) {
+                TraceLog(LOG_INFO, "Game over %d", opacity);
+                PlaySound(zeGota);
+
+                ImageResize(&lulaImg, screenWidth, screenHeight);
+                lulaTxt = LoadTextureFromImage(lulaImg);
+                UnloadImage(lulaImg);
+                once = false;
+                timer = system_clock::now();
+            }
+            stage++;
+        break;
+        case 1:
+            // TraceLog(LOG_INFO, "Game over %d", opacity);
+
+            DrawTexture(lulaTxt, 0, 0, WHITE);
+            
+            if(!IsSoundPlaying(zeGota)) UnloadSound(zeGota);
+            
+            if(timeout(1.5s)) stage++;
+        break;
+        case 2:
+            if(opacity < 256) opacity += 1;
+            else state = CREDITS;
+
+            ClearBackground({0, 0, 0, (unsigned char)opacity});
+        break;
+    }
 }
 
 int main(void)
@@ -610,9 +810,18 @@ int main(void)
     rlDisableBackfaceCulling();
     
     InitTextureDictionary();
-    Camera camera          = InitCamera();
+
+    // lula.sound = LoadSound("./res/audio/hino.wav");
+    lula.scare = LoadSound("./res/audio/zegotinha.wav");
+    lula.texture = LoadTexture("./res/lula.png");
+
+    lula.soundboard[lula.sbSz++] = LoadSound("./res/audio/banana.wav");
+    lula.soundboard[lula.sbSz++] = LoadSound("./res/audio/manga.wav");
+
+    heartbeat = LoadSound("./res/audio/heartbeat.wav");
 
     char* token = strtok((char*)map, ";");
+
     while(token) {
         int x, y;
         int ret;
@@ -638,49 +847,64 @@ int main(void)
                 rooms[x][y].paths[BACK].passable,     rooms[x][y].paths[BACK].path
             );
         }
-        else if(sscanf(
-            token,
-            ">%d %d",
-            &player.endX, &player.endY
-        ) == 2);
+        // else if(sscanf(
+        //     token,
+        //     ">%d %d",
+        //     &player.endX, &player.endY
+        // ) == 2);
         else TraceLog(LOG_FATAL, "Parsing error for file at token #(%d) '%s'", ret, token);
 
         token = strtok(NULL, ";");
     }
 
+    InitGame();
 
-    if(player.endX < 0 || player.endX > ARR_LEN(rooms) || player.endY < 0 || player.endY > ARR_LEN(rooms[0]))
-        TraceLog(LOG_FATAL, "No end for map.");
+    // if(player.endX < 0 || player.endX > ARR_LEN(rooms) || player.endY < 0 || player.endY > ARR_LEN(rooms[0]))
+    //     TraceLog(LOG_FATAL, "No end for map.");
 
-    AppState state = MENU;
     float overlayOpacity = 0.0f;
-    auto timer = system_clock::now();
     
     player.room = LoadRoom(rooms[0][0]);
+    bool once = true;
     while (!WindowShouldClose())
     {
         switch(state) {
             case MENU:
-                Menu(state, timer);
+                Menu();
             break;
             case INIT:
                 BeginDrawing();
-                    IntroCutscene(state, timer);
+                    IntroCutscene();
                 EndDrawing();
             break;
             break;
             case DEAD:
-                if(overlayOpacity < 2.6) overlayOpacity += 0.1;
-
                 BeginDrawing();
-                    DrawRectangle(0, 0, screenWidth, screenHeight, RED);
-                    
-                    if(overlayOpacity == 2.5) DrawCenteredText("Você foi lulado.", 60, WHITE);
+                        GameOver();
                 EndDrawing();
             break;
             case WIN:
                 BeginDrawing();
-                    WinCutscene(timer);
+                    WinCutscene();
+                EndDrawing();
+            break;
+            case CREDITS:
+                BeginDrawing();
+                    ClearBackground(BLACK);
+                    DrawCenteredText("Um jogo por", 40, WHITE, -MeasureText("EncheDev", 40));
+                    DrawCenteredText("EncheDev", 40, YELLOW, MeasureText("Um jogo por ", 40));
+
+                    if(DrawButton(
+                        {
+                            20, screenHeight - 70,
+                            (float)MeasureText("Jogar denovo", 20) * 2,
+                            40,
+                        },
+                        "Jogar denovo",
+                        {32, 32, 32, 255},
+                        {128, 128, 128, 255})
+                    )
+                        InitGame();
                 EndDrawing();
             break;
             case TURN_LEFT:
@@ -688,13 +912,17 @@ int main(void)
             case WALK_IN:
             case WALK_OUT:
             case DEFAULT:
-                GameLoop(state, player, camera, timer);
+                GameLoop();
             break;
         }       
     }
-    DrawMiniMap({}, {}, true); // cleanup minimap
-    GameLoop(state, player, camera, timer, true); // cleanup loop
-    for(auto texture : textureDict) UnloadTexture(texture); // cleanup textures
+    DrawMiniMap({}, {}, true); 
+    GameLoop(true); 
+    for(auto texture : textureDict) UnloadTexture(texture); 
+    // UnloadSound(lula.sound);
+    UnloadSound(lula.scare);
+    UnloadTexture(lula.texture);
+    for(auto sound : lula.soundboard) UnloadSound(sound);
 
     CloseWindow();
     return 0;
