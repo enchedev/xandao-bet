@@ -1,17 +1,16 @@
-#include <raylib.h>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <math.h>
+#include <raylib.h>
 #include <rlgl.h>
-#include <cstring>
-#include <chrono>
+#include <time.h>
 #include "./renderer.cpp"
 #include "./map.h"
 
-using namespace std::chrono;
-
 #define FOV 120.0f
-#define TIMEOUT std::chrono::seconds(1)
+#define TIMEOUT SEC(1)
+#define SEC(x) ((x) * 1000)
 #define MAP_WIDTH 8
 #define MAP_HEIGHT 9
 #define TURNTIME 600ms
@@ -97,7 +96,7 @@ struct PlayerInfo {
     Room room;
 } player;
 
-time_point<std::chrono::system_clock> timer;
+time_t timer;
 Camera3D camera;
 Sound heartbeat;
 bool updateWalls = true;
@@ -376,7 +375,7 @@ void IntroCutscene() {
     
     if(IsKeyPressed(KEY_SPACE)) {
         stage++;
-        timer = system_clock::now(); // reset clock
+        timer = time(NULL); // reset clock
     }
     
     int fontSize = 40;
@@ -418,13 +417,12 @@ void IntroCutscene() {
         break; 
     }
 
-    if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
+    if(time(NULL) >= TIMEOUT)
         DrawText("Aperte espaço para continuar", 20, screenHeight - 25, 15, WHITE);
 }
 
-template <typename Timer>
-bool timeout(Timer whatever) {
-    return duration_cast<Timer>(system_clock::now() - timer) >= whatever;
+bool timeout(time_t whatever) {
+    return time(NULL) - timer >= whatever;
 }
 
 void GameLoop(bool cleanup = false)
@@ -458,8 +456,8 @@ void GameLoop(bool cleanup = false)
         PlaySound(ambiance);
     }
 
-    if(player.heldBreath && timeout(std::chrono::milliseconds{})) {
-        timer = system_clock::now();
+    if(player.heldBreath && timeout(300)) {
+        timer = time(NULL);
         LulaWalk(rooms[lula.x][lula.y], lula);
      
         if(!IsSoundPlaying(heartbeat))
@@ -477,7 +475,7 @@ void GameLoop(bool cleanup = false)
         player.heldBreath = !player.heldBreath;
         
         if(!player.heldBreath) StopSound(heartbeat);
-        timer = system_clock::now();
+        timer = time(NULL);
     }
 
     
@@ -684,7 +682,7 @@ void WinCutscene() {
         
     if(IsKeyPressed(KEY_SPACE)) {
         stage++;
-        timer = system_clock::now(); 
+        timer = time(NULL); 
     }
 
     if(overlayOpacity != 2.5) 
@@ -709,7 +707,7 @@ void WinCutscene() {
         break;
     }
     
-    if(duration_cast<seconds>(system_clock::now() - timer) >= TIMEOUT)
+    if(time(NULL) - timer >= TIMEOUT)
         DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
 }
 
@@ -782,7 +780,7 @@ void GameOver() {
                 lulaTxt = LoadTextureFromImage(lulaImg);
                 UnloadImage(lulaImg);
                 once = false;
-                timer = system_clock::now();
+                timer = time(NULL);
             }
             // TraceLog(LOG_INFO, "Game over %d", opacity);
             DrawTexture(lulaTxt, 0, 0, WHITE);

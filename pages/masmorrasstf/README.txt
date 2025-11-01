@@ -31,14 +31,7 @@ I.1 Como compilar para WASM
         # !! O PROJETO NÃO FOI TESTADO PARA COMPILAR SOB EMCC
         # !! PROVAVELMENTE VAI DAR MUITOS ERROS
             cd [xandao-bet]/pages/masmorrasstf
-            emcc -o masmorra.html main.cpp -Os -Wall -std=c++11 \
-                /home/$USER/raylib/src/web/libraylib.web.a \
-                -I. -I /home/$USER/raylib/src \
-                -L. -L /home/$USER/raylib/src \
-                -s USE_GLFW=3 \
-                -s ASYNCIFY \
-                --shell-file /home/$USER/raylib/src/shell.html \
-                -DPLATFORM_WEB
+            emcc main.cpp -o ball.html -O0 -Wall -std=c++11 /home/ethan/raylib/src/libraylib.web.a -I. -I /home/ethan/raylib/src -L. -L /home/ethan/raylib/src -s USE_GLFW=3 -g2 -sASSERTIONS -s FORCE_FILESYSTEM=1 --preload-file ./res -sALLOW_MEMORY_GROWTH=1 -DPLATFORM_WEB --profiling -sASYNCIFY
 
     
 
