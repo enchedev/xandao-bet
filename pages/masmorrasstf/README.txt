@@ -28,8 +28,7 @@ I.1 Como compilar para WASM
             cd ../raylib/src
             make PLATFORM=PLATFORM_WEB EMSDK_PATH=[emsdk]
         # buildando o projeto 
-        # !! O PROJETO NÃO FOI TESTADO PARA COMPILAR SOB EMCC
-        # !! PROVAVELMENTE VAI DAR MUITOS ERROS
+        # !! FAÇA UM BACKUP DE ball.html POIS SERÁ SOBRESCREVIDO DURANTE A COMPILAÇÃO
             cd [xandao-bet]/pages/masmorrasstf
             emcc main.cpp -o ball.html -O0 -Wall -std=c++11 /home/ethan/raylib/src/libraylib.web.a -I. -I /home/ethan/raylib/src -L. -L /home/ethan/raylib/src -s USE_GLFW=3 -g2 -sASSERTIONS -s FORCE_FILESYSTEM=1 --preload-file ./res -sALLOW_MEMORY_GROWTH=1 -DPLATFORM_WEB --profiling -sASYNCIFY
 

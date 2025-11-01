@@ -430,7 +430,7 @@ void GameLoop(bool cleanup = false)
     static bool debug = false;
 
     static Sound footsteps = LoadSound("res/audio/walk.wav");
-    static Sound ambiance = LoadSound("./res/audio/ambiance.wav");
+    static Sound ambiance = LoadSound("./res/audio/ambiance.wav"); 
     static Texture2D& floorTexture = textureDict[2];
     
     static Passage<Texture2D*>* leftWall;
@@ -793,7 +793,6 @@ void GameOver() {
         case 1:
             if(opacity < 256) opacity += 1;
             else state = CREDITS;
-
             ClearBackground({0, 0, 0, (unsigned char)opacity});
         break;
     }
@@ -890,17 +889,17 @@ int main(void)
                     DrawCenteredText("Um jogo por", 40, WHITE, -MeasureText("EncheDev", 40));
                     DrawCenteredText("EncheDev", 40, YELLOW, MeasureText("Um jogo por ", 40));
 
-                    if(DrawButton(
-                        {
-                            20, screenHeight - 70,
-                            (float)MeasureText("Jogar denovo", 20) * 2,
-                            40,
-                        },
-                        "Jogar denovo",
-                        {32, 32, 32, 255},
-                        {128, 128, 128, 255})
-                    )
-                        InitGame();
+                    // if(DrawButton(
+                    //     {
+                    //         20, screenHeight - 70,
+                    //         (float)MeasureText("Jogar denovo", 20) * 2,
+                    //         40,
+                    //     },
+                    //     "Jogar denovo",
+                    //     {32, 32, 32, 255},
+                    //     {128, 128, 128, 255})
+                    // )
+                    //     InitGame();
                 EndDrawing();
             break;
             case TURN_LEFT:
