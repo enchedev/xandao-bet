@@ -4,17 +4,20 @@
 #include <math.h>
 #include <raylib.h>
 #include <rlgl.h>
-#include <time.h>
+#include <chrono>
 #include "./renderer.cpp"
 #include "./map.h"
 
+using namespace std::chrono;
+
 #define FOV 120.0f
-#define TIMEOUT SEC(1)
-#define SEC(x) ((x) * 1000)
+#define TIMEOUT seconds(1)
 #define MAP_WIDTH 8
 #define MAP_HEIGHT 9
 #define TURNTIME 600ms
 #define ARR_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
+
+typedef system_clock::time_point timer_t;
 
 std::string directionMap[] = {
     "LEFT",
@@ -96,7 +99,7 @@ struct PlayerInfo {
     Room room;
 } player;
 
-time_t timer;
+timer_t timer;
 Camera3D camera;
 Sound heartbeat;
 bool updateWalls = true;
@@ -298,7 +301,8 @@ void LulaWalk(ShallowRoom room, Lula& lula) {
         int distance = LulaDistance(lula) < 1 ? 1 : LulaDistance(lula);
 
         TraceLog(LOG_INFO, "Played %d %d %f", random, distance, 1.0f / pow(distance, 2));
-        SetSoundVolume(lula.soundboard[random], 1.0f / pow(distance, 2));// / pow(LulaDistance(lula), 2));
+        // SetSoundVolume(lula.soundboard[random], 1.0f / pow(distance, 2));// / pow(LulaDistance(lula), 2));
+        SetSoundVolume(lula.soundboard[random], 1.5f / distance); //!> FERNANDO
         StopSound(lula.soundboard[random]);
         PlaySound(lula.soundboard[random]);
     }
@@ -375,7 +379,7 @@ void IntroCutscene() {
     
     if(IsKeyPressed(KEY_SPACE)) {
         stage++;
-        timer = time(NULL); // reset clock
+        timer = system_clock::now(); // reset clock
     }
     
     int fontSize = 40;
@@ -417,12 +421,13 @@ void IntroCutscene() {
         break; 
     }
 
-    if(time(NULL) >= TIMEOUT)
+    if(duration_cast<milliseconds>(system_clock::now().time_since_epoch()) >= TIMEOUT)
         DrawText("Aperte espaço para continuar", 20, screenHeight - 25, 15, WHITE);
 }
 
-bool timeout(time_t whatever) {
-    return time(NULL) - timer >= whatever;
+template <typename T>
+bool timeout(T whatever) {
+    return duration_cast<T>(system_clock::now() - timer) >= whatever;
 }
 
 void GameLoop(bool cleanup = false)
@@ -436,8 +441,6 @@ void GameLoop(bool cleanup = false)
     static Passage<Texture2D*>* leftWall;
     static Passage<Texture2D*>* frontWall;
     static Passage<Texture2D*>* rightWall;
-    
-
 
     if(cleanup) {
         UnloadSound(footsteps);
@@ -456,8 +459,8 @@ void GameLoop(bool cleanup = false)
         PlaySound(ambiance);
     }
 
-    if(player.heldBreath && timeout(300)) {
-        timer = time(NULL);
+    if(player.heldBreath && timeout(milliseconds(300))) {
+        timer = system_clock::now();
         LulaWalk(rooms[lula.x][lula.y], lula);
      
         if(!IsSoundPlaying(heartbeat))
@@ -475,7 +478,7 @@ void GameLoop(bool cleanup = false)
         player.heldBreath = !player.heldBreath;
         
         if(!player.heldBreath) StopSound(heartbeat);
-        timer = time(NULL);
+        timer = system_clock::now();
     }
 
     
@@ -682,7 +685,7 @@ void WinCutscene() {
         
     if(IsKeyPressed(KEY_SPACE)) {
         stage++;
-        timer = time(NULL); 
+        timer = system_clock::now(); 
     }
 
     if(overlayOpacity != 2.5) 
@@ -707,7 +710,7 @@ void WinCutscene() {
         break;
     }
     
-    if(time(NULL) - timer >= TIMEOUT)
+    if(system_clock::now() - timer >= TIMEOUT)
         DrawText("Aperte espaço para continuar", 20, screenHeight - 20, 10, WHITE);
 }
 
@@ -774,13 +777,14 @@ void GameOver() {
         case 0:
             if(once) {
                 TraceLog(LOG_INFO, "Game over %d", opacity);
+                SetSoundVolume(zeGota, 2.0f); //!> FERNANDO
                 PlaySound(zeGota);
 
                 ImageResize(&lulaImg, screenWidth, screenHeight);
                 lulaTxt = LoadTextureFromImage(lulaImg);
                 UnloadImage(lulaImg);
                 once = false;
-                timer = time(NULL);
+                timer = system_clock::now();
             }
             // TraceLog(LOG_INFO, "Game over %d", opacity);
             DrawTexture(lulaTxt, 0, 0, WHITE);
@@ -793,7 +797,7 @@ void GameOver() {
         case 1:
             if(opacity < 256) opacity += 1;
             else state = CREDITS;
-            ClearBackground({0, 0, 0, (unsigned char)opacity});
+            DrawRectangle(0, 0, screenWidth, screenHeight, {0, 0, 0, (unsigned char)opacity});
         break;
     }
 }
