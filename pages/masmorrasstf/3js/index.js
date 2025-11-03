@@ -52,6 +52,7 @@ document.addEventListener('keydown', k => {
     else if(k.key === 'f')
         console.log(`facing ${facing()}`)
     else if(k.code === 'ArrowLeft' && !turnCooldown) {
+        turnCooldown = true;
         rotationTween = new Tween(camera.rotation)
             .to({
                 y: degToRad( radToDeg(camera.rotation.y) +90 )
@@ -159,26 +160,62 @@ Walls[Direction.Left].position.x = 0.5
 Walls[Direction.Right].position.x = -0.5
 Walls[Direction.Down].position.z = -0.5
 
-Walls[Direction.Up].addEventListener('click', ev => move(Direction.Up))
-Walls[Direction.Down].addEventListener('click', ev => move(Direction.Down))
-Walls[Direction.Left].addEventListener('click', ev => move(Direction.Left))
-Walls[Direction.Right].addEventListener('click', ev => move(Direction.Right))
+function rotateToAndMove(dir) {
+    var target = 0;
+    switch(dir) {
+        case Direction.Up:    target = 180;   break;
+        case Direction.Left:  target = -90;  break;
+        case Direction.Right: target = 90; break;
+        case Direction.Down:  target = 0; break;
+    }
+    console.log("Turning to ", target)
+    
+    function tmp() {
+        if(!turnCooldown) {
+            turnCooldown = true;
+            console.log("From ", radToDeg(camera.rotation.y), " to ", target);
+            rotationTween = new Tween(camera.rotation)
+                .to({y: degToRad(target)}, 500)
+                .onComplete(() => { turnCooldown = false; move(dir) })
+                .start();
+            return;
+        }
+        else setTimeout(100, tmp)
+    }
+
+    tmp()
+}
+
+Walls[Direction.Up].addEventListener('click', ev => {
+    if(facing() !== Direction.Up)
+        rotateToAndMove(Direction.Up);
+    // move(Direction.Up)
+})
+Walls[Direction.Down].addEventListener('click', ev => {
+    if(facing() !== Direction.Down)
+        rotateToAndMove(Direction.Down);
+    // move(Direction.Down)
+})
+Walls[Direction.Left].addEventListener('click', ev => {
+    if(facing() !== Direction.Left)
+        rotateToAndMove(Direction.Left);
+    // move(Direction.Left)
+})
+Walls[Direction.Right].addEventListener('click', ev => {
+    if(facing() !== Direction.Right)
+        rotateToAndMove(Direction.Right);
+    // move(Direction.Right)
+})
 
 function animate() {
     // requestAnimationFrame(animate)
     intMan.update()
-    
-    if(radToDeg(camera.rotation.y) % 90 !== 0 && !inMap)
-        camera.rotation.y = degToRad(Math.round(radToDeg(camera.rotation.y) / 90) * 90)
-    if(radToDeg(camera.rotation.y) >= 270 || radToDeg(camera.rotation.y) <= -360)
-        camera.rotation.y = 0
+    if(turnCooldown) rotationTween.update()
 
     orbit.enabled = inMap
     Walls.forEach(ea => ea.visible = !inMap)
     mapBlocks.forEach(ea => ea.visible = inMap)
     
-    if(rotationTween.update) rotationTween.update()
-    if(zoomTween.update) zoomTween.update()
     if(inMap) orbit.update()
     
     renderer.render(scene, camera)
@@ -215,12 +252,12 @@ function move(dir) {
 
         updateWalls()
         
-        zoomTween = new Tween(camera)
-            .to({fov: 30}, 500)
-            .chain(
-                new Tween(camera)
-                    .to({fov: 90}, 500)
-            ).start()
+        // zoomTween = new Tween(camera)
+        //     .to({fov: 30}, 500)
+        //     .chain(
+        //         new Tween(camera)
+        //             .to({fov: 90}, 500)
+        //     ).start()
         
         // if not pushed yet.
         if(mapBlockMirror.find(e => e.x == player.x && e.y == player.y) === undefined) { 
