@@ -120,6 +120,7 @@ const loader = new THREE.TextureLoader()
 
 let textures = {}
 
+var done = 0;
 function loadW(f, lbl) {
     loader.load(
         f, 
@@ -127,16 +128,8 @@ function loadW(f, lbl) {
         {
             text.colorSpace = THREE.SRGBColorSpace
             // textures.push(text)
-            if(lbl === 'path' || lbl === 'brick') {
-                for(var i = 0; i < 4; ++i) {
-                    if(map[player.x][player.y][i] === 1 && lbl === 'path') Walls[i].material.map = text
-                    else if(lbl === 'bricks') Walls[i].material.map = text
-
-                    Walls[i].material.needsUpdate = true
-                }
-            }
-
             textures[lbl] = text
+            updateWalls()
         }
         ,
         ammount =>
@@ -151,8 +144,8 @@ function loadW(f, lbl) {
     )
 }
     
-loadW('./res/res/path.png', 'path')
-loadW('./res/res/bricks.png', 'bricks')
+loadW('./res/path.png', 'path')
+loadW('./res/bricks.png', 'bricks')
 
 scene.add(...Walls)
 
@@ -166,11 +159,16 @@ Walls[Direction.Left].position.x = 0.5
 Walls[Direction.Right].position.x = -0.5
 Walls[Direction.Down].position.z = -0.5
 
+Walls[Direction.Up].addEventListener('click', ev => move(Direction.Up))
+Walls[Direction.Down].addEventListener('click', ev => move(Direction.Down))
+Walls[Direction.Left].addEventListener('click', ev => move(Direction.Left))
+Walls[Direction.Right].addEventListener('click', ev => move(Direction.Right))
+
 function animate() {
     // requestAnimationFrame(animate)
     intMan.update()
     
-    if(radToDeg(camera.rotation.y) % 90 !== 0 && inMap)
+    if(radToDeg(camera.rotation.y) % 90 !== 0 && !inMap)
         camera.rotation.y = degToRad(Math.round(radToDeg(camera.rotation.y) / 90) * 90)
     if(radToDeg(camera.rotation.y) >= 270 || radToDeg(camera.rotation.y) <= -360)
         camera.rotation.y = 0
@@ -194,10 +192,14 @@ window.addEventListener('resize', function () {
   renderer.setSize(window.innerWidth, window.innerHeight)
 })
 
-Walls[Direction.Up].addEventListener('click', ev => move(Direction.Up))
-Walls[Direction.Down].addEventListener('click', ev => move(Direction.Down))
-Walls[Direction.Left].addEventListener('click', ev => move(Direction.Left))
-Walls[Direction.Right].addEventListener('click', ev => move(Direction.Right))
+function updateWalls() {
+    for(var i = 0; i < 4; ++i) {
+        if(map[player.x][player.y][i]) Walls[i].material.map = textures['path']
+        else Walls[i].material.map = textures['bricks']
+
+        Walls[i].material.needsUpdate = true
+    }
+}
 
 let zoomTween = {}
 function move(dir) {
@@ -210,6 +212,8 @@ function move(dir) {
                 case Direction.Left: player.x--; break
             }
         }
+
+        updateWalls()
         
         zoomTween = new Tween(camera)
             .to({fov: 30}, 500)
@@ -229,13 +233,6 @@ function move(dir) {
             scene.add(temp)
             mapBlocks.push(temp)
             mapBlockMirror.push({x: player.x, y: player.y})
-        }
-
-        for(var i = 0; i < 4; ++i) {
-            if(map[player.x][player.y][i]) Walls[i].material.map = textures['path']
-            else Walls[i].material.map = textures['bricks']
-
-            Walls[i].material.needsUpdate = true
         }
     }
     console.log(player.x, ' ', player.y)
