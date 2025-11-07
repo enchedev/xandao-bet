@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.createjs.com/1.0.0/tweenjs.min.js"></script>
+    <script src="../dropdown.js"></script>
+
+    <style>
+        :root {
+            --tc: lightblue;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            
+            background-color: black;
+            font-family: 'Courier New', Courier, monospace;
+            color: white;
+
+            display: flex;
+            flex-direction: column;
+        }
+        #canvas {
+            width: 800px;
+            height: 450px;
+            margin: auto;
+        }
+        #terminal {
+            z-index: 3;
+            width: 100%;
+            height: 2%;
+            font-size: 1rem;
+            color: var(--tc);
+            margin: 0px;
+        }
+
+        #win {
+            width: 50%;
+            height: 50%;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            background-color: black;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+
+            & span {
+                margin: auto;
+                color: white;
+                height: 90%;
+
+                & .bolso {
+                    color: greenyellow
+                }
+    
+                & .enche {
+                    color: orange;
+                }
+            }
+
+            & button {
+                height: 10%;
+                border: 1px solid white;
+                background-color: #161616;
+                color: wheat;
+            }
+        }
+
+        #canvas {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lore {
+            /* margin: 5%; */
+            max-width: 80%;
+            margin: auto;
+
+            & h3 {
+                font-size: 1.25rem;
+                margin: 0px;
+                & span {
+                    color: greenyellow;
+                }
+            }
+            
+            & p {
+                font-size: 1rem;
+            }
+            & h2 {
+                width: fit-content;
+                margin: 0px 1px auto auto;
+                font-weight: 1000;
+                font-size: 2rem;
+                color: salmon;
+            }
+        }
+
+        .xandcoins {
+            position: absolute;
+            top: 10%;
+            right: 1%;
+            margin: 0px;
+            display: flex;
+            flex-direction: row;
+
+            & p {
+                color: greenyellow;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 2rem;  
+                margin: 0px; 
+            } 
+
+            & img {
+                height: 2rem;
+                margin-left: 2%;
+            }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-SE2SWpu1.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BDMHsnGL.css">
+</head>
+<body>
+    <header>
+        <h1>XANDÃO <span>BET</span></h1>
+        <nav class="nav">
+            <ul class="myList">
+                <li class="listItem">
+                    <a href="../../index.html">Sobre</a>
+                </li>
+                <li class="listItem">
+                    <div class="dropdown">
+                        <button class="dropbtn" onclick="dropdown()">Minigames</button>
+                        <div id="myDropdown" class="dropdown-content">
+                            <a href="../neutralize/index.html">Neutralize a petralha!</a>
+                            <a href="">Morro Crusade</a>
+                            <a href="../prenda/index.html">Prenda Bolsonaro!</a>
+                            <a href="../xandniquel/index.html">Xandníquel</a>
+                            <a href="../masmorrasstf/ball.html">Masmorras STF</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div class="xandcoins"><p></p> <img src="/assets/xandcoin-DkkZFZBh.png" alt="xC"></div>
+
+    <div id="canvas">
+        <span id="terminal"></span>
+    </div>
+
+    <div class="controls">
+        <pre style="margin: auto;">
+            - Clique as paredes para virar
+            - Aperte D para saber se ele está perto
+            - Aperte a Barra de Espaço para segurar a respiração
+            - Procure cubos (Dijuntores) para vencer
+        </pre>
+    </div>
+    <div class="lore">
+        <h1>LORE</h1>
+        <h3>Durante o julgamento de ex-presidente <span>Jair Bolsonaro</span> houve uma queda de luz.<br></h3>
+        <p>
+            Como o mais novo membro do <b>Supremo Tribunal Federal</b>, Alexandre de Moraes lhe escolheu para religar
+            a energia do STF por meio dos 3 dijuntores de segurança em seu porão. Porém, ao chegar à porta de madeira
+            envelhecida, um homem desconhecido sai das sombras em seu entorno. Ele estende a mão, um pequeno dispositivo
+            piscando nela. Ele só fala uma frase antes de desaparecer nas trevas:
+        </p>
+        <h2>"Você não está sozinho."</h2>
+    </div>
+
+</body>
+</html>
