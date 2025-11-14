@@ -1,3 +1,8 @@
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { InteractionManager } from 'three.interactive'
+import { Tween } from 'tweenjs'
+
 if(window.innerWidth < 300 || window.innerHeight < 300) {
     alert('Perdão, mas o jogo não é suportado nas dimensões')
     throw("Unsupported dimensions")
@@ -97,11 +102,6 @@ const map = [
 
 ];
 
-import * as THREE from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { InteractionManager } from 'three.interactive'
-import { Tween } from 'tweenjs'
-
 function degToRad(degrees) {
     return degrees * (Math.PI / 180);
 }
@@ -163,7 +163,7 @@ document.addEventListener('keydown', k => {
         }
         console.log(inMap)
     }
-    else if(k.key === 'd' && window.player.inventory['locator'])
+    else if(k.key === 'd')
     {
         const str = "A tela lê " + distance(window.player, window.player.lula);
         document.querySelector('#terminal').textContent = str
@@ -192,6 +192,21 @@ document.addEventListener('keydown', k => {
 
     console.log(k.code)
 })
+
+function anyAvailableSwitch() {
+    for (key in specials) {
+        const x = +key[0]
+        const y = +key[1]
+
+        for(sw of previous) {
+            if(sw !== null && sw.pos[0] === x && sw.pos[1] === y) {
+                return { x: sw.pos[0], y: sw.pos[1] }
+            }
+        }
+    }
+
+    return {x: 0, y: 0}
+}
 
 function facing() {
     switch(radToDeg(camera.rotation.y)) {
@@ -323,7 +338,7 @@ function rotateToAndMove(dir) {
         move(dir)
         return
     }
- 
+    
     console.log("Turning to ", target)
     if(degToRad(camera.rotation.y) < 0 && target === 180 )
         target = -target;
@@ -416,7 +431,7 @@ function move(dir) {
         // if not pushed yet.
         if(mapBlockMirror.find(e => e.x == player.x && e.y == player.y) === undefined) { 
             const temp = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 1, 1),
+                new THREE.BoxGeometry(0.5, 0.5, 0.5),
                 new THREE.MeshBasicMaterial({ color: 'gray'})
             )
             temp.position.x = player.x
@@ -425,6 +440,8 @@ function move(dir) {
             mapBlocks.push(temp)
             mapBlockMirror.push({x: player.x, y: player.y})
         }
+
+        fireEvent('onroomenter')
     }
     console.log(player.x, ' ', player.y)
 }
@@ -466,7 +483,7 @@ function animate() {
 
         if(ambiance.paused) ambiance.play().catch((e) => {});
 
-        if(window.player.switches === 3) win();     
+        if(window.player.switches === 2) win();     
         
         if(change)
         {
@@ -552,7 +569,7 @@ function lulaWalk() {
 
     if(randomBetween(0, 10)) {
         // var volumeDb = (100 - 20 * Math.log10(distance(player, lula)))
-        var volumeDb = 1 / Math.pow(distance(window.player, window.player.lula), 2)
+        var volumeDb = 1 / distance(window.player, window.player.lula)
         
         console.log("Playing at ", volumeDb)
         try {
@@ -603,56 +620,74 @@ function gameOver() {
     setXands(xands - 1000)
 }
 
-var previous = [false, false, false]
+var previous = [
+    {
+        pos: [],
+        obj: null
+    },
+    {
+        pos: [],
+        obj: null
+    },
+    {
+        pos: [],
+        obj: null
+    },
+]
 
 const specials = {
     ['01']: function (side) {
-        newSwitch(0, side)
+        newSwitch(0, [0, 1], side)
     },
     ['74']: function (side) {
-        newSwitch(1, 2, 0, 0.5)
+        newSwitch(1, [7, 4], 2, 0, 0.5)
     },
-    ['36']: function() {
-        newSwitch(1, 2, 0, 0.5)
-    }
 }
 
-function newSwitch(id, side, x = 0.5, z = 0) {
-    if(previous[id]) return;
+function newSwitch(id, pos, side, x = 0.5, z = 0) {
+    if(previous[id].obj !== null) return;
 
-    const dijuntor = new THREE.Mesh(
+    previous[id].obj = new THREE.Mesh(
         new THREE.BoxGeometry( 0.25, 0.5, 0.3 ),
         new THREE.MeshBasicMaterial({color: 'gray'})
     )
-    dijuntor.position.y = 0.1
-    dijuntor.position.x = x
-    dijuntor.position.z = z
+    previous[id].obj.position.y = 0.1
+    previous[id].obj.position.x = x
+    previous[id].obj.position.z = z
 
     switch(side) {
-        case Direction.Up: dijuntor.rotation.y = degToRad(0); break
-        case Direction.Left: dijuntor.rotation.y = degToRad(90); break
-        case Direction.Right: dijuntor.rotation.y = degToRad(-90); break
-        case Direction.Down: dijuntor.rotation.y = degToRad(180); break
+        case Direction.Up: previous[id].obj.rotation.y = degToRad(0); break
+        case Direction.Left: previous[id].obj.rotation.y = degToRad(90); break
+        case Direction.Right: previous[id].obj.rotation.y = degToRad(-90); break
+        case Direction.Down: previous[id].obj.rotation.y = degToRad(180); break
     }
 
-    intMan.add(dijuntor);
-    dijuntor.addEventListener('click', ev => {
-        if(previous[id] === true) {
+    intMan.add(previous[id].obj);
+    previous[id].obj.addEventListener('click', ev => {
+        if(previous[id].obj === true) {
             text('Você consegue ouvir um xiado baixo da corrente passando por ele')
             return;
         }
 
         player.switches++;
-        previous[id] = true
+        previous[id].obj
         good('Você achou um dos dijuntores! ('+player.switches+'/3)')
-        dijuntor.material.color = new THREE.Color('green')
-        dijuntor.material.needsUpdate = true;
+        previous[id].obj.material.color = new THREE.Color('green')
+        previous[id].obj.material.needsUpdate = true;
     })
 
-    scene.add(dijuntor)
+    scene.add(previous[id].obj)
 
     onEvent('onroomleave', () => {
-        dijuntor.visible = false;
+        previous[id].obj.visible = false;
+        intMan.remove(previous[id].obj)
+    })
+
+    onEvent('onroomenter', () => {
+        if(window.player.x === pos[0] && window.player.y === pos[1]) {
+            previous[id].obj.visible = true
+            intMan.add(previous[id].obj);
+        }
     })
 }
 
@@ -674,7 +709,8 @@ function good(txt) {
 var eventRegistry = undefined;
 function initRegistry() {
     eventRegistry = {
-        'onroomleave': []
+        'onroomleave': [],
+        'onroomenter': []
     }
 }
 
@@ -717,11 +753,10 @@ function win() {
         switch(stage) {
             case 1: span.innerHTML = '<span class="bolso">Bolsonaro</span> é condenado a 13 prisões perpétuas'; break
             case 2: span.innerHTML = 'Xandão, orgulhoso da sua coragem, lhe promove ao cargo mais alto do STF'; break
-            case 3: span.innerHTML += '<br>(Antes, claro, do magnâmio Alexandre de Moraes)'; break
-            case 4: {
+            case 3: {
                 botao.style.display = 'none'
-                span.innerHTML = 'Um jogo por'
-                span.innerHTML += '<span class="enche">EncheDev</span>'
+                span.innerHTML = 'Um jogo por '
+                span.innerHTML += '<a class="enche" href="https://github.com/enchedev/xandao-bet">EncheDev</a>'
             }
         }
     }
